@@ -81,7 +81,6 @@ There are two entries, `build` and `execute`. `build` is used to compile depende
           -p, --prepare-system <sys1,sys2,...>	    prepare systems.
           -s, --system <sys1,sys2,...>	            build excutable for systems.
           -e, --experiment <exp1,exp2,...> 	            produce data and compile queries for experimeents.
-          -n, --no-func			            skip Func Test in build executable.
         
         Examples:
         (1) build
@@ -93,8 +92,8 @@ There are two entries, `build` and `execute`. `build` is used to compile depende
         (3) build -s dbtoaster,flink
           Build exectuables for system dbtoaster and flink.
         
-        (4) build -s flink -e length3 -n
-          Prepare data and compile query of experiment 'length3', then build executable for system flink without Func Test.
+        (4) build -s flink -e length3 
+          Prepare data and compile query of experiment 'length3', then build executable for system flink.
     ```
 * execute
     ```

@@ -24,7 +24,7 @@ opt_data_tools=0
 opt_prepare_system=''
 opt_system=''
 opt_experiment=''
-opt_no_func=0
+opt_no_func=1
 
 function usage {
     echo "Usage: build [Options]
@@ -36,7 +36,6 @@ Options:
   -p, --prepare-system <sys1,sys2,...>	prepare systems. 
   -s, --system <sys1,sys2,...>		build excutable for systems.
   -e, --experiment <exp1,exp2,...> 	produce data and compile queries for experimeents.
-  -n, --no-func				skip Func Test in build executable.
 
 Examples:
   (1) build
@@ -48,8 +47,8 @@ Examples:
   (3) build -s dbtoaster,flink 
 	Build exectuables for system dbtoaster and flink.
 
-  (4) build -s flink -e length3 -n
-	Prepare data and compile query of experiment 'length3', then build executable for system flink without Func Test.
+  (4) build -s flink -e length3 
+	Prepare data and compile query of experiment 'length3', then build executable for system flink.
 "
     exit 1
 }
@@ -72,7 +71,6 @@ else
             -p | --prepare-system) opt_prepare_system=$2; shift 2 ;;
             -s | --system) opt_system=$2; shift 2 ;;
             -e | --experiment) opt_experiment=$2; shift 2 ;;
-            -n | --no-func) opt_no_func=1; shift ;;
             --) shift; break ;;
             *) echo "Unexpected option: $1."; usage ;;
         esac
