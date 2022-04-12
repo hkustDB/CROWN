@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>experiments-trill</RootNamespace>
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Reactive" Version="4.1.2"/>
+    <PackageReference Include="Trill" Version="2021.7.22.1"/>
+    <PackageReference Include="xunit" Version="2.4.1"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0"/>
+  </ItemGroup>
+  <Target Name="CopyAppConfig" AfterTargets="AfterBuild">
+    <Copy SourceFiles="app.config" DestinationFiles="$(OutDir)\testhost.dll.config"/>
+  </Target>
+</Project>

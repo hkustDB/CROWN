@@ -1,0 +1,12 @@
+CREATE STREAM Graph1(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph2(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph3(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+SELECT B.src, B.dst
+FROM Graph1 AS A, Graph2 AS B, Graph3 AS C
+WHERE A.dst = B.src AND B.dst = C.src;

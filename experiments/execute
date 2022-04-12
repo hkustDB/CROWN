@@ -1,0 +1,239 @@
+#!/bin/bash
+
+SCRIPT=$(readlink -f $0)
+SCRIPT_PATH=$(dirname "${SCRIPT}")
+PARENT_PATH=$(dirname "${SCRIPT_PATH}")
+
+source "${SCRIPT_PATH}/common.sh"
+
+CONFIG_FILES=("${SCRIPT_PATH}/experiment.cfg")
+
+log_file="${SCRIPT_PATH}/log/execute.log"
+
+mkdir -p "${SCRIPT_PATH}/log"
+chmod -f g=u "${SCRIPT_PATH}/log"
+rm -f ${log_file}
+touch ${log_file}
+chmod -f g=u ${log_file}
+
+# flags for command options
+opt_all=0
+opt_system=''
+opt_experiment=''
+opt_result_file=''
+
+function usage {
+    echo "Usage: execute [Options]
+	  
+Options:
+  -h, --help				print this message.
+  -a, --all				run all experiments in all systems. (DEFAULT OPTION)
+  -s, --system <sys1,sys2,...>		run experiments in specific systems only.
+  -e, --experiment <exp1,exp2,...> 	run the specific experiments only.
+  -r, --result <file>			output the result into file.
+
+Examples:
+  (1) execute
+	Equals to 'execute -a' or 'execute -s all -e all'. Run all experiments in all systems.
+
+  (2) execute -e length3
+	Run experiment 'length3' in all systems.
+
+  (3) execute -s dbtoaster,flink 
+	Equals to 'execute -s dbtoaster,flink -e all'. Run all experiments in system dbtoaster and flink.
+
+  (4) execute -s flink -e length3 -r /tmp/result.txt
+	Run experiment 'length3' in system flink and output the result into /tmp/result.txt.
+"
+    exit 1
+}
+
+if [[ $# -eq 0 ]]; then
+    # 'execute' is equals to 'execute -a' or 'execute --all'
+    opt_all=1
+else
+    opt_args=$(getopt -a -n execute -o has:e:r: --long help,all,system:,experiment:result: -- "$@")
+    if [[ $? -ne 0 ]]; then
+        usage
+    fi
+
+    eval set -- "${opt_args}"
+    while :; do
+        case $1 in
+            -h | --help) usage ;;
+            -a | --all) opt_all=1; shift ;;
+            -s | --system) opt_system=$2; shift 2 ;;
+            -e | --experiment) opt_experiment=$2; shift 2 ;;
+            -r | --result) opt_result_file=$2; shift 2 ;;
+            --) shift; break ;;
+            *) echo "Unexpected option: $1."; usage ;;
+        esac
+    done
+fi
+
+if [[ ${opt_all} -eq 1 ]]; then
+    if [[ -n ${opt_system} ]]; then
+        echo "Warning: option -a already implies option -s all."
+    fi
+
+    if [[ -n ${opt_experiment} ]]; then
+        echo "Warning: option -a already implies option -e all."
+    fi
+
+    # option -a equals to -s all -e all
+    opt_system='all'
+    opt_experiment='all'
+elif [[ -n ${opt_system} && -z ${opt_experiment} ]]; then
+    # if only option -s is set, then -e should be set to 'all'
+    opt_experiment='all'
+elif [[ -n ${opt_experiment} && -z ${opt_system} ]]; then
+    # if only option -e is set, then -s should be set to 'all'
+    opt_system='all'
+fi
+
+# check if system names in option -s is valid
+if [[ -n ${opt_system} ]]; then
+    if [[ ${opt_system} == 'all' ]]; then
+        opt_system_names=${valid_system_names[@]}
+    else
+        opt_system_names=$(echo ${opt_system} | awk -F, '{for(i=1;i<=NF;i++) printf "%s%s",$i,ORS}')
+        for system_name in ${opt_system_names[@]}; do
+            is_valid=0
+            for name in ${valid_system_names[@]}; do
+                if [[ ${system_name} == ${name} ]]; then
+                    is_valid=1
+                fi
+            done
+
+            if [[ ${is_valid} -eq 0 ]]; then
+                echo "Unexpected system name ${system_name} in option -s"
+                usage
+            fi
+        done
+    fi
+fi
+
+# check if experiment names in option -e is valid
+if [[ -n ${opt_experiment} ]]; then
+    if [[ ${opt_experiment} == 'all' ]]; then
+        opt_experiment_names=${valid_experiment_names[@]}
+    else
+        opt_experiment_names=$(echo ${opt_experiment} | awk -F, '{for(i=1;i<=NF;i++) printf "%s%s",$i,ORS}')
+        for experiment_name in ${opt_experiment_names[@]}; do
+            is_valid=0
+            for name in ${valid_experiment_names[@]}; do
+                if [[ ${experiment_name} == ${name} ]]; then
+                    is_valid=1
+                fi
+            done
+
+            if [[ ${is_valid} -eq 0 ]]; then
+                echo "Unexpected experiment name ${experiment_name} in option -e"
+                usage
+            fi
+        done
+    fi
+fi
+
+if [[ -n ${opt_result_file} ]]; then
+    touch ${opt_result_file}
+fi
+
+function launch {
+    launch_experiment=$1
+    launch_system1=''
+    pid1=''
+    launch_system2=''
+    pid2=''
+
+    if [[ $# -gt 1 ]]; then
+        launch_system=$2
+        launch_system1=${launch_system}
+        bash "${SCRIPT_PATH}/${launch_system}/execute.sh" "${launch_experiment}" "8" &
+        pid1=$!
+    fi
+    # params: exp sys1 sys2 sys3 ... -> sys1 sys2 sys3 ...
+    shift
+    if [[ $# -gt 1 ]]; then
+        launch_system=$2
+        launch_system2=${launch_system}
+        bash "${SCRIPT_PATH}/${launch_system}/execute.sh" "${launch_experiment}" "16" &
+        pid2=$!
+    fi
+    # params: sys1 sys2 sys3 ... -> sys2 sys3 ...
+    shift
+
+    wait ${pid1}
+    ret_val1=$?
+    wait ${pid2}
+    ret_val2=$?
+
+    report "${launch_experiment}" "${launch_system1}" "${ret_val1}"
+    if [[ -n ${launch_system2} ]]; then
+        report "${launch_experiment}" "${launch_system2}" "${ret_val2}"
+    fi
+
+    if [[ $# -gt 1 ]]; then
+        # params: sys2 sys3 ... -> sys3 ...
+        shift
+        launch "${launch_experiment}" "$@"
+    fi
+}
+
+function report {
+    report_experiment=$1
+    report_system=$2
+    ret_val=$3
+
+    is_error_or_timeout=0
+    if [[ ${ret_val} -ne 0 ]]; then
+        is_error_or_timeout=1
+    else
+        sec=$(bash "${SCRIPT_PATH}/${report_system}/extract-time.sh" "${report_experiment}")
+    fi
+
+    if [[ -n ${opt_result_file} ]]; then
+        echo "  - ${report_system}:" >> ${opt_result_file}
+        if [[ ${is_error_or_timeout} -eq 0 ]]; then
+            echo "      Execution time: ${sec} sec" >> ${opt_result_file}
+        else
+            echo "      Timeout or Error" >> ${opt_result_file}
+        fi
+
+        if [[ -f "${SCRIPT_PATH}/${report_system}/report-config.sh" ]]; then
+            echo "      Configurations:" >> ${opt_result_file}
+            report_config_string=$(bash "${SCRIPT_PATH}/${report_system}/report-config.sh" "${report_experiment}")
+            echo ${report_config_string} | awk -F, 'BEGIN{INDENT="       "}{printf " %s%s%s",INDENT,$1,ORS; for(i=2;i<=NF;i++) printf "%s%s%s",INDENT,$i,ORS}' >> ${opt_result_file}
+        fi
+    else
+        echo "  - ${report_system}:"
+        if [[ ${is_error_or_timeout} -eq 0 ]]; then
+            echo "      Execution time: ${sec} sec"
+        else
+            echo "      Timeout or Error"
+        fi
+        if [[ -f "${SCRIPT_PATH}/${report_system}/report-config.sh" ]]; then
+            echo "      Configurations:"
+            report_config_string=$(bash "${SCRIPT_PATH}/${report_system}/report-config.sh" "${report_experiment}")
+            echo ${report_config_string} | awk -F, 'BEGIN{INDENT="       "}{printf " %s%s%s",INDENT,$1,ORS; for(i=2;i<=NF;i++) printf "%s%s%s",INDENT,$i,ORS}'
+        fi
+    fi
+}
+
+for experiment in ${opt_experiment_names[@]}; do
+    if [[ -n ${opt_result_file} ]]; then
+        echo "Experiment: ${experiment}" >> ${opt_result_file}
+    else
+        echo "Experiment: ${experiment}"
+    fi
+
+    # launch and report the result of experiment, for each system in opt_system_names
+    launch "${experiment}" ${opt_system_names[@]}
+    
+    if [[ -n ${opt_result_file} ]]; then
+        echo "" >> ${opt_result_file}
+    else
+        echo ""
+    fi
+done
+

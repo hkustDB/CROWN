@@ -1,0 +1,16 @@
+CREATE STREAM Graph1(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph2(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph3(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph4(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+SELECT A.src, COUNT(*)
+FROM Graph1 AS A, Graph2 AS B, Graph3 AS C, Graph4 AS D
+WHERE A.src = B.src AND A.src = C.src AND A.src = D.src
+GROUP BY A.src;
