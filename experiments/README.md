@@ -68,6 +68,64 @@ Set the following configuration items to the correct values before running.
 # build the data-tools used in this project
 ./build -t
 ```
+### Input Data Format
+1. graph experiments(length* & star_snt)
+```
+    # the raw data file should have the following format
+    # two digital fields per row, seperated by ','
+    # all the edges should be distinct in the entire graph
+    src1,dst1
+    src2,dst2
+    ...
+```
+2. snb experiments
+```
+    # the snb input data should lies under {snb.data.base.path}/{system}/{experiment}
+    # For example, /path/to/base/trill/snb1_window/
+    
+    (1) For ACQ, the input data should be in the following format:
+    # +/- indicates insertion or deletion
+    # the 2nd field indicates the relation name, KN=knows, ME=message, TA=tag, MT=message_tag, PE=person, ...
+    # all the input data should be assembly into a single data.csv
+    +|KN|f|2853|3850
+    +|ME|f|200053|photo200053.jpg|27.112.123.203|Firefox|\N|\N|0|4941|0|5046|\N|\N
+    ...
+    
+    (2) For Trill, the input data should be in the following format:
+    # fields seperated by '|'
+    # files should be named as trill.{relation}.{window/arbitrary}.csv
+    For example, trill.knows.window.csv may looks like:
+    1263123695|1263173860|false|2853|3850
+    1263123695|1263173860|false|3850|2853
+    1263128695|1263173860|false|4899|2853
+    ...
+    
+    (3) For dbtoaster(cpp/spark), the input data should be in the following format:
+    # fields seperated by '|'
+    # field1 is the timestamp
+    # field2 is 1(for insertion) or 0(for deletion)
+    # For cpp mode, field2 can be -1(for full enum)
+    # For spark mode, need an extra file with name enum-points-perf.txt to indicate the enum points
+    # files should be named as {dbtoaster/dbtoaster_cpp}.{relation}.{window/arbitrary}.csv
+    For example, dbtoaster.person.window.csv may looks like:
+    1262313861|1|f|4941|K.|Kumar|female|1981-05-20|27.112.123.203|Firefox|184|as;mr;en|K.4941@gmail.com
+    1262367218|1|f|5723|Rajiv|Singh|male|1983-04-27|27.0.61.254|Firefox|231|mr;ta;en|Rajiv5723@dr-dre.com;Rajiv5723@gmail.com;Rajiv5723@gmail.com
+    ...
+    
+    enum-points-perf.txt may looks like:
+    3,18,50,112,209,340,514,763,1072,1527,2142,3109,4257,4935
+    # trigger full enum after 3,18,... batches have been processed
+    
+    (4) For Flink, the input data should be in the following format:
+    # fields seperated by '|'
+    # files should be named as flink.{relation}.{window/arbitrary}.csv
+    # field1 is the timestamp, in format yyyy-MM-dd hh:mm:ss.SSS
+    For example, flink.messagetag.window.csv may looks like:
+    2010-01-01 10:44:31.102|5036|2961
+    2010-01-01 10:44:31.102|5036|0
+    2010-01-02 01:33:47.909|6005|7522
+    ...
+```
 ## Usage
 There are two entries, `build` and `execute`. `build` is used to compile dependencies, prepare data, compile queries, build executables, and perform functional tests. `execute` runs the build product and statistics the time consumption of each system and experiment.
 * build 
