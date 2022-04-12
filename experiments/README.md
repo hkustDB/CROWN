@@ -69,7 +69,7 @@ Set the following configuration items to the correct values before running.
 ./build -t
 ```
 ## Usage
-There are two entries, build and execute. build is used to compile dependencies, prepare data, compile queries, build executables, and perform functional tests. execute runs the build product and statistics the time and memory consumption of each system and experiment.
+There are two entries, `build` and `execute`. `build` is used to compile dependencies, prepare data, compile queries, build executables, and perform functional tests. `execute` runs the build product and statistics the time consumption of each system and experiment.
 * build 
     ```
         Usage: build [Options]
