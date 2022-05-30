@@ -3,3 +3,6 @@
 - `experiments` scripts and source code for data experiments, check `experiments/README.md` for more.
 - `dbtoaster_modified` modified dbtoaster-backend source code
 - `dbtoaster_frontend_modified` modified dbtoaster-a5 source code
+
+# How to implement a customized query
+Please check the `How to implement a customized query` section in `crown/README.md`
