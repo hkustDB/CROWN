@@ -91,49 +91,9 @@ object L3DistributedJob {
             case "+" =>
               action = "Insert"
               outcollect()
-//              relation = "G1"
-//              cnt = cnt + 1
-//              for (i <- 0 until parallel) {
-//                //ctx.output(graphTag, Payload(action, relation, KeyList(cells(1).toInt%4*4+i).asInstanceOf[Any],
-//                //  Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("A","B")), cnt))
-//                ctx.output(graphTag, Payload(action, relation, KeyList(i).asInstanceOf[Any],
-//                  Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("A","B")), cnt))
-//              }
-//              relation = "G2"
-////              ctx.output(graphTag, Payload(action, relation, KeyList(cells(0).toInt%4*4+cells(1).toInt%4).asInstanceOf[Any],
-////                Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("B","C")), cnt))
-//              ctx.output(graphTag, Payload(action, relation, KeyList(cells(1).toInt%parallel).asInstanceOf[Any],
-//                Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("B","C")), cnt))
-//              relation = "G3"
-//              ctx.output(graphTag, Payload(action, relation, KeyList(cells(0).toInt%parallel).asInstanceOf[Any],
-//                Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("C", "D")), cnt))
-////              for (i <- 0 to 3) {
-////                ctx.output(graphTag, Payload(action, relation, KeyList(i*4+cells(0).toInt%4).asInstanceOf[Any],
-////                  Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("C", "D")), cnt))
-////              }
             case "-" =>
               action = "Delete"
               outcollect()
-//              relation = "G1"
-//              cnt = cnt + 1
-//              for (i <- 0 until parallel) {
-//                //ctx.output(graphTag, Payload(action, relation, KeyList(cells(1).toInt%4*4+i).asInstanceOf[Any],
-//                //  Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("A","B")), cnt))
-//                ctx.output(graphTag, Payload(action, relation, KeyList(i).asInstanceOf[Any],
-//                  Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("A","B")), cnt))
-//              }
-//              relation = "G2"
-//              //              ctx.output(graphTag, Payload(action, relation, KeyList(cells(0).toInt%4*4+cells(1).toInt%4).asInstanceOf[Any],
-//              //                Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("B","C")), cnt))
-//              ctx.output(graphTag, Payload(action, relation, KeyList(cells(1).toInt%parallel).asInstanceOf[Any],
-//                Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("B","C")), cnt))
-//              relation = "G3"
-//              ctx.output(graphTag, Payload(action, relation, KeyList(cells(0).toInt%parallel).asInstanceOf[Any],
-//                Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("C", "D")), cnt))
-//            //              for (i <- 0 to 3) {
-//            //                ctx.output(graphTag, Payload(action, relation, KeyList(i*4+cells(0).toInt%4).asInstanceOf[Any],
-//            //                  Attributes(Array[Any](cells(0).toInt, cells(1).toInt), Array[String]("C", "D")), cnt))
-//            //              }
             case "*" if fullEnumEnable =>
               println("trigger full enum at cnt = " + cnt)
               for (left <- (0 until leftKeys)) {
