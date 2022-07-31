@@ -10,10 +10,10 @@ experiment_name=$1
 
 CONFIG_FILES=("${SCRIPT_PATH}/${experiment_name}/perf.cfg" "${SCRIPT_PATH}/${experiment_name}/common.cfg" "${SCRIPT_PATH}/experiment.cfg")
 
-acq_home=$(prop 'acq.code.home')
-acq_mode=$(prop 'acq.experiment.mode')
+crown_home=$(prop 'crown.code.home')
+crown_mode=$(prop 'crown.experiment.mode')
 
-if [[ "${acq_mode}" = 'minicluster' ]]; then
+if [[ "${crown_mode}" = 'minicluster' ]]; then
     # run in MiniCluster, extract time from log
     execution_log="${SCRIPT_PATH}/log/execute-${experiment_name}.log"
     exec_time=$(grep "StartTime" "${execution_log}" | grep "EndTime" | grep "AccumulateTime" | awk '{print $13}' | sort -n | tail -n1)
@@ -21,7 +21,7 @@ if [[ "${acq_mode}" = 'minicluster' ]]; then
     echo "${exec_time_in_sec}"
 else
     # run in ScalaTest, extract time from test report
-    report_path="${acq_home}/target/surefire-reports/TestSuite.txt"
+    report_path="${crown_home}/target/surefire-reports/TestSuite.txt"
     total=$(grep "+ Execution time" ${report_path} | awk '{print $4}')
     echo "${total}"
 fi

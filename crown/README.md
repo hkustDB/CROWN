@@ -51,7 +51,7 @@ mvn clean package -DskipTests=true
 ```
 then run the job using the following command
 ```shell
-java -cp target/ACQ-1.0-SNAPSHOT.jar {job_name} --path {base_path} --graph {file_name}
+java -cp target/CROWN-1.0-SNAPSHOT.jar {job_name} --path {base_path} --graph {file_name}
 ```
 
 ### Run in Flink Standalone Cluster
@@ -64,7 +64,7 @@ check the Flink UI at http://localhost:8081/#/overview
 
 Change the directory into `flink-1.13.x/bin`, run the following command
 ```shell
-./flink run -d -c {job_name} /path/to/ACQ/target/ACQ-1.0-SNAPSHOT.jar --path {base_path} --graph {file_name}
+./flink run -d -c {job_name} /path/to/CROWN/target/CROWN-1.0-SNAPSHOT.jar --path {base_path} --graph {file_name}
 ```
 it should print the following line
 ```shell

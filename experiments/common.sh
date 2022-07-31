@@ -3,7 +3,7 @@
 SCRIPT=$(readlink -f $0)
 SCRIPT_PATH=$(dirname "${SCRIPT}")
 
-valid_system_names=('dbtoaster' 'dbtoaster_cpp' 'flink' 'trill' 'acq')
+valid_system_names=('dbtoaster' 'dbtoaster_cpp' 'flink' 'trill' 'crown')
 valid_experiment_names=('length3_filter' 'length3_project' 'length4_filter' 'length4_project' 'star_cnt' 'snb1_window' 'snb1_arbitrary' 'snb2_window' 'snb2_arbitrary' 'snb3_window' 'snb3_arbitrary' 'snb4_window' 'snb4_arbitrary' 'dumbbell')
 
 function err {

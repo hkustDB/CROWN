@@ -10,12 +10,12 @@ experiment_name=$1
 
 CONFIG_FILES=("${SCRIPT_PATH}/${experiment_name}/common.cfg" "${SCRIPT_PATH}/experiment.cfg")
 
-mode=$(prop 'acq.experiment.mode')
+mode=$(prop 'crown.experiment.mode')
 echo "mode = ${mode},"
 if [[ ${mode} = 'minicluster' ]]; then
     class=$(prop 'minicluster.entry.class')
     echo "class = ${class},"
-    parallelism=$(prop 'acq.minicluster.parallelism')
+    parallelism=$(prop 'crown.minicluster.parallelism')
     echo "parallelism = ${parallelism}"
 else
     class=$(prop 'test.entry.class')

@@ -121,9 +121,9 @@ All input data should contain both input and output operations and sort in order
 
 # Enumeration
 
-For single thread test, we compare ACQ, DBToaster_cpp, DYN, Trill, and Flink(if possible), for DBToaster_cpp, ACQ, DYN and DBToaster, request a full enumeration for every half-window;  in the meantime, also report the ACQ, Flink, Trill with delta enumeration (ACQ will perform two tests).
+For single thread test, we compare CROWN, DBToaster_cpp, DYN, Trill, and Flink(if possible), for DBToaster_cpp, CROWN, DYN and DBToaster, request a full enumeration for every half-window;  in the meantime, also report the CROWN, Flink, Trill with delta enumeration (CROWN will perform two tests).
 
-For distributed mode, we compare ACQ, Flink, and DBToaster_Spark, ACQ will perform full enumeration every half-window, as well as delta enumeration (two tests), Flink will perform delta enumeration.
+For distributed mode, we compare CROWN, Flink, and DBToaster_Spark, CROWN will perform full enumeration every half-window, as well as delta enumeration (two tests), Flink will perform delta enumeration.
 
 # Selectitive
 
@@ -135,7 +135,7 @@ Test all queries with different parallelism (1, 2, 4, 8, 16,32).
 
 # Miscellaneous
 
-1. For distributed experiments, ensure ACQ, DBToaster and Flink can use the same number of cores.  If possible, limits the number of cores these systems can access. 
+1. For distributed experiments, ensure CROWN, DBToaster and Flink can use the same number of cores.  If possible, limits the number of cores these systems can access. 
 2. For every query and every system, write the output to file once, but in the final experiments, drop all outputs to null.  If not enough disk, then move some files to cpu8.
-3. If possible, tests ACQ and Flink with a cluster (which can submit a job from WebUI).
+3. If possible, tests CROWN and Flink with a cluster (which can submit a job from WebUI).
 4. Test all queries with three graphs: soc-bitcoin (or Facebook, you can report both results and we will choose one), web-Google, and soc-epinions. 

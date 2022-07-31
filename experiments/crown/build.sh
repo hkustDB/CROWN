@@ -16,16 +16,16 @@ rm -f ${log_file}
 touch ${log_file}
 chmod -f g=rw ${log_file}
 
-acq_home=$(prop 'acq.code.home')
-cd ${acq_home}
+crown_home=$(prop 'crown.code.home')
+cd ${crown_home}
 
-rm -rf "${acq_home}/target/"
+rm -rf "${crown_home}/target/"
 
 mvn "clean" >> ${log_file} 2>&1
 
 mvn "compile" "-DskipTests=true" >> ${log_file} 2>&1
-assert "acq compile failed."
+assert "crown compile failed."
 
 mvn "package" "-DskipTests=true" >> ${log_file} 2>&1
-assert "acq package failed."
-chmod -Rf g=u "${acq_home}/target/"
+assert "crown package failed."
+chmod -Rf g=u "${crown_home}/target/"

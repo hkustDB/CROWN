@@ -17,10 +17,10 @@ Set the following configuration items to the correct values before running.
         data.tools.home=/path/to/data-tools
         graph.input.path=/path/to/graph/file
     ```
-* acq/experiment.cfg
+* crown/experiment.cfg
     ```shell
-        acq.code.home=/path/to/CROWN
-        acq.experiment.mode=minicluster  # minicluster or test
+        crown.code.home=/path/to/CROWN
+        crown.experiment.mode=minicluster  # minicluster or test
     ```  
 * dbtoaster/experiment.cfg
     ```shell
@@ -83,7 +83,7 @@ Set the following configuration items to the correct values before running.
     # the snb input data should lies under {snb.data.base.path}/{system}/{experiment}
     # For example, /path/to/base/trill/snb1_window/
     
-    (1) For ACQ, the input data should be in the following format:
+    (1) For CROWN, the input data should be in the following format:
     # +/- indicates insertion or deletion
     # the 2nd field indicates the relation name, KN=knows, ME=message, TA=tag, MT=message_tag, PE=person, ...
     # all the input data should be assembly into a single data.csv
@@ -183,7 +183,7 @@ There are two entries, `build` and `execute`. `build` is used to compile depende
         # or modify ${system}/${experiment}/common.cfg directly
     ```
 ## Supported Systems
-* ACQ
+* CROWN
 * Dbtoaster(Spark)
 * Dbtoaster(Cpp)
 * Flink(window)
@@ -239,16 +239,18 @@ There are two entries, `build` and `execute`. `build` is used to compile depende
     │                                 └── FuncTest.scala
     ├── dbtoaster_cpp  # similar to dbtoaster
     ├── flink  # similar to dbtoaster
-    ├── acq  # similar to dbtoaster
+    ├── crown  # similar to dbtoaster
     └── trill  # similar to dbtoaster
 ```
 ## Special Experiments
 * length3_filter2
   - length3 experiment with different update sequence. R1,R3 window size is controlled by ${length3.filter2.window.factor1}, R2 window size is controlled by ${length3.filter2.window.factor2}. 
-  - trigger full enum for 10 time(only works in dbtoaster and acq full mode) by default.
-* length3_filter3(ACQ only)
+  - trigger full enum for 10 time(only works in dbtoaster and crown full mode) by default.
+* length3_filter3(CROWN only)
   - length3 experiment with different update sequence. R2 window size is controlled by ${length3.filter2.window.factor2}. 20 insertion/deletion of R1 and R3 will be performed for each update to R2. 
   - No full enum will be triggered.
+* some experiments in trill(ends with '_filter')
+  - you have to manually set the input size of the file in `trill/{experiment}/Query.cs` in order to compute the window size correctly.
 ## Extension
 * adding new experiments
   1. create new folders with the name {experiment} under all systems.
@@ -260,3 +262,6 @@ There are two entries, `build` and `execute`. `build` is used to compile depende
   2. create structure like other systems.
   3. create build.sh, execute.sh, prepare-data.sh, prepare-query.sh, prepare-system.sh and implement them.
   4. add the system name to valid_system_names in common.sh
+## Troubleshooting
+If you have any trouble in running these scripts, please check the logs in `log/` or `system/log/`. 
+For example, if an error is thrown in running `build -e length3 -s crown`, you can check the log in `crown/log/build.log`.
