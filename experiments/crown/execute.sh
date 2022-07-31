@@ -27,7 +27,7 @@ full_enable=$(prop 'crown.full.enum.enable' 'true')
 filter_value=$(prop 'filter.condition.value' '-1')
 
 cd "${crown_home}"
-if [[ ${crown_home} = 'minicluster' ]]; then
+if [[ ${crown_mode} = 'minicluster' ]]; then
     crown_class_name=$(prop "minicluster.entry.class")
     input_path=$(dirname "${input_file}")
     input_file_name=$(basename "${input_file}")

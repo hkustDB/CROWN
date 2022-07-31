@@ -10,31 +10,47 @@ The following commands or tools need to be installed in advance.
 * maven - 3.8.4
 * sbt - 1.4.3
 
+### Config dbtoaster
+1. clone dbtoaster and checkout to commit id 3c62c0c1da9fcbeedfc79fe7969faa24184ae293
+2. apply the changes in `dbtoaster_modified` to your local dbtoaster directory(copy and replace)
+3. delete the `ddbtoaster/lms/DefaultLMSGen.scala` in your local dbtoaster directory
+4. config dbtoaster as described in https://github.com/dbtoaster/dbtoaster-backend/blob/master/README.md
+5. add partition info to `src/global/Partitioner.ml` from `dbtoaster_frontend_modified` to your local dbtoaster-a5 directory (copy and replace)
+6. `make` your local dbtoaster-a5
+
 ### Configurations
 Set the following configuration items to the correct values before running.
 * data/tools.cfg
     ```shell
         data.tools.home=/path/to/data-tools
+        # e.g., data.tools.home=/home/data/lab/this-repo/experiments/data-tools
         graph.input.path=/path/to/graph/file
+        # e.g., graph.input.path=/home/data/lab/graph/soc-bitcoin.raw
     ```
 * crown/experiment.cfg
     ```shell
         crown.code.home=/path/to/CROWN
+        # e.g., crown.code.home=/home/data/lab/this-repo/crown
         crown.experiment.mode=minicluster  # minicluster or test
     ```  
 * dbtoaster/experiment.cfg
     ```shell
         dbtoaster.backend.home=/path/to/dbtoaster-backend
+        # e.g., dbtoaster.backend.home=/home/data/lab/dbtoaster
         hdfs.cmd.path=/path/to/hdfs
+        # e.g., hdfs.cmd.path=/home/data/continuous/hadoop-2.7.0/bin/hdfs
         hdfs.root.path=hdfs:///path/to/experiment/root
+        # e.g., hdfs.root.path=hdfs:///users/lab
     ```
 * dbtoaster/src/main/resources/core-site.xml and dbtoaster/src/main/resources/hdfs-site.xml
     ```shell
+        mkdir -p dbtoaster/src/main/resources
         # copy the core-site.xml and hdfs-site.xml to these two paths
     ```
 * dbtoaster_cpp/experiment.cfg
     ```shell
         dbtoaster.backend.home=/path/to/dbtoaster-backend 
+        # e.g., dbtoaster.backend.home=/home/data/lab/dbtoaster
     ```
 * flink/experiment.cfg
     ```shell
@@ -53,13 +69,6 @@ Set the following configuration items to the correct values before running.
     ```shell
         # modify the inputSize in length3*/Query.cs, length4*/Query.cs, and star_cnt/Query.cs 
     ```
-### Config dbtoaster
-1. clone dbtoaster and checkout to commit id 3c62c0c1da9fcbeedfc79fe7969faa24184ae293
-2. apply the changes in `dbtoaster_modified` to your local dbtoaster directory(copy and replace)
-3. delete the `ddbtoaster/lms/DefaultLMSGen.scala` in your local dbtoaster directory
-4. config dbtoaster as described in https://github.com/dbtoaster/dbtoaster-backend/blob/master/README.md
-5. add partition info to `src/global/Partitioner.ml` from `dbtoaster_frontend_modified` to your local dbtoaster-a5 directory (copy and replace)
-6. `make` your local dbtoaster-a5
 
 ### Build dbtoaster libs and data-tools
 ```shell
@@ -188,6 +197,53 @@ There are two entries, `build` and `execute`. `build` is used to compile depende
 * Dbtoaster(Cpp)
 * Flink(window)
 * Trill
+
+## Supported Experiments
+* length3_filter 
+* length3_project 
+* length4_filter 
+* length4_project 
+* star_cnt 
+* snb1_window 
+* snb1_arbitrary 
+* snb2_window 
+* snb2_arbitrary 
+* snb3_window 
+* snb3_arbitrary 
+* snb4_window 
+* snb4_arbitrary 
+* dumbbell
+
+## Execute the first experiment
+```shell
+    # prepare data and build executables for all systems with experiment 'length3_filter'
+    ./build -e length3_filter -s all
+    # execute experiment 'length3_filter' for all systems
+    ./execute -e length3_filter -s all
+    # if the configuration is done correctly, the script should print something like:
+    Experiment: length3_filter
+      - dbtoaster:
+          Execution time: 134.06 sec
+          Configurations:
+            batch size = 100
+      - dbtoaster_cpp:
+          Execution time: 9.33 sec
+      - flink:
+          Execution time: 12.00 sec
+          Configurations:
+            parallelism = 1
+      - trill:
+          Execution time: 23.68 sec
+          Configurations:
+            punctuation time = 1
+      - crown:
+          Execution time: 2.76 sec
+          Configurations:
+            mode = minicluster
+            class = L3DistributedJob
+            parallelism = 1
+```
+
 ## Project Structure
 ```
     ├── build  # build script entry
