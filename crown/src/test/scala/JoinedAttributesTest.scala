@@ -108,6 +108,14 @@ class JoinedAttributesTest extends AnyFunSuite{
         assert(joinedAttr1.hashCode() != joinedAttr2.hashCode())
         // order insensitive
         assert(joinedAttr1.hashCode() == joinedAttr3.hashCode())
+
+        val attr1 = Attributes(Array(1,2,3), Array("A","B","C"))
+        val attr2 = Attributes(Array(1,2), Array("A","B"))
+        val joinedAttr4 = new JoinedAttributes(List(("A", 1), ("B", 2), ("C", 3)))
+        val joinedAttr5 = new JoinedAttributes(List(("C", 3), ("A", 1), ("B", 2)))
+        assert(joinedAttr4.hashCode() == attr1.hashCode())
+        assert(joinedAttr4.hashCode() != attr2.hashCode())
+        assert(joinedAttr5.hashCode() == attr1.hashCode())
     }
 
     test("containsKey") {

@@ -70,16 +70,20 @@ class JoinedAttributes(basedannotation : Double) extends Attributes(null, null, 
           kv => jattr.valueList.find(p => p._1 == kv._1).exists(p => p._2 == kv._2))
       case attr: Attributes =>
         valueList.length == attr.keys.length && valueList.forall(kv => {
-              val i = attr.keys.indexOf(kv._1)
-              i >= 0 && attr.values(i) == kv._2
-            })
+          val i = attr.keys.indexOf(kv._1)
+          i >= 0 && attr.values(i) == kv._2
+        })
       case _ => false
     }
   }
 
   override def hashCode(): Int = {
-    // insure JoinedAttributes(A -> a, B -> b) has the same hashCode with JoinedAttributes(B -> b, A -> a)
-    valueList.toSet.hashCode()
+    if (hashcodeBuffer == 0) {
+      var result = 0
+      valueList.foreach(t => result = result ^ computeHashCode(t._1, t._2))
+      hashcodeBuffer = result
+    }
+    hashcodeBuffer
   }
 
   override def containsKey(attr : String) : Boolean = valueList.exists(p => p._1 == attr)
@@ -89,16 +93,16 @@ class JoinedAttributes(basedannotation : Double) extends Attributes(null, null, 
     var old_value: Any = null
     def dropOld(l: List[(String, Any)]): List[(String, Any)] = l match {
       case h :: t =>
-            if (h._1 == _orig) {
-              dropped = true
-              old_value = h._2
-              t
-            } else {
-              dropOld(t)
-            }
+        if (h._1 == _orig) {
+          dropped = true
+          old_value = h._2
+          t
+        } else {
+          dropOld(t)
+        }
       case Nil => List.empty[(String, Any)]
     }
-    valueList = dropOld(valueList)
+    valueList = (valueList.takeWhile(kv => kv._1 != _orig)) ::: dropOld(valueList)
     if (dropped) {
       valueList = (_new, old_value) :: valueList
     } else {

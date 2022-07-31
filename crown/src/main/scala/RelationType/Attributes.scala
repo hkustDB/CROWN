@@ -5,6 +5,7 @@ import scala.collection.mutable.ArrayBuffer
 case class Attributes(values : Array[Any], keys : Array[String], basedannotation : Double = 1.0) extends Serializable {
   var annotation : Double = basedannotation
   var joinedList : JoinedAttributes = null
+  var hashcodeBuffer : Int = 0
   def apply(attr: String): Any = {
     val i = keys.indexOf(attr)
     if (i != -1)
@@ -33,20 +34,35 @@ case class Attributes(values : Array[Any], keys : Array[String], basedannotation
   }
 
   override def equals(obj: Any): Boolean = {
-    if (obj.getClass == this.getClass) {
-      for (i <- keys.indices) {
-        val j = obj.asInstanceOf[this.type].keys.indexOf(keys(i))
-        if (j == -1) return false
-        if (obj.asInstanceOf[this.type].values(j) != values(i)) return false
-      }
-      true
-    } else {
-      false
+    obj match {
+      case joinedAttributes: JoinedAttributes =>
+        val thatValueList = joinedAttributes.valueList
+        thatValueList.size == values.length && thatValueList.forall(t => {
+          val index = this.keys.indexOf(t._1)
+          index >= 0 && values(index) == t._2
+        })
+      case attr: Attributes =>
+        for (i <- keys.indices) {
+          val j = attr.keys.indexOf(keys(i))
+          if (j == -1) return false
+          if (attr.values(j) != values(i)) return false
+        }
+        true
+      case _ =>
+        false
     }
   }
 
-  override def hashCode(): Int =
-    values.toSeq.hashCode()
+  override def hashCode(): Int = {
+    if (hashcodeBuffer == 0) {
+      var result = 0
+      for (i <- values.indices) {
+        result = result ^ computeHashCode(keys(i), values(i))
+      }
+      hashcodeBuffer = result
+    }
+    hashcodeBuffer
+  }
 
   def containsKey(attr : String) : Boolean = keys.contains(attr)
 
@@ -64,5 +80,15 @@ case class Attributes(values : Array[Any], keys : Array[String], basedannotation
 
   def equalDouble(v1 : Double, v2 : Double) : Boolean = {
     (v1 - v2) * (v1 - v2) < 1e-6
+  }
+
+  def computeHashCode(fieldName: String, fieldValue: Any): Int = {
+    val valueHashCode = fieldValue match {
+      case i: Int => i
+      case s: String => s.##
+      case l: Long => (l ^ 0xFFFFFFFF).toInt ^ (l >> 32).toInt
+      case _ => throw new UnsupportedOperationException(s"please implement your hashcode function for ${fieldValue.getClass}")
+    }
+    fieldName.## * valueHashCode
   }
 }

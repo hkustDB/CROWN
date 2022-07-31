@@ -25,4 +25,12 @@ class AttributesTest extends AnyFlatSpec with Matchers with BeforeAndAfter{
     System.out.println(e)
   }
 
+  "Attribute" should "compute correct hashcode" in {
+    val attr1 = Attributes(Array(1,2,3), Array("A","B","C"))
+    val attr2 = Attributes(Array(1,2), Array("A","B"))
+    val attr3 = Attributes(Array(3,2,1), Array("C","B","A"))
+
+    assert(attr1.hashCode() != attr2.hashCode())
+    assert(attr1.hashCode() == attr3.hashCode())
+  }
 }

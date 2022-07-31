@@ -47,10 +47,10 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
   var keyCount : MapState[Attributes, Int] = _
   var time : ValueState[Long] = _
   type TupleConnection = (Relation,
-    Array[String],
-    MapState[Attributes, mutable.HashSet[Attributes]],
-    MapState[Attributes, mutable.HashSet[Attributes]],
-    MapState[Attributes, mutable.HashSet[Attributes]])
+      Array[String],
+      MapState[Attributes, mutable.HashSet[Attributes]],
+      MapState[Attributes, mutable.HashSet[Attributes]],
+      MapState[Attributes, mutable.HashSet[Attributes]])
   var connection : ArrayBuffer[TupleConnection] = new ArrayBuffer()
   var cnt = 0
   var attributeDescriptor : TypeInformation[Attributes] = _
@@ -258,7 +258,6 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
    * mode = 5: perform output with latency in the field _6
    * @param t An iterator for the query result
    * @param operator indicator string for different output type.
-   * @param mode  indicator for output mode.
    * @param outputPath used for file output.
    */
   def outputResult(t : Iterator[Attributes], operator : String, outputPath : String = ""): Unit = {
