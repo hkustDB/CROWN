@@ -4,7 +4,7 @@ import experiments.data.convert.Convertor
 import experiments.data.utils.CsvFileWriter._
 
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.{Date, TimeZone}
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
@@ -15,10 +15,11 @@ object DataConvertor extends Convertor {
         val dst = args(1)
         println("convert from " + src + " to " + dst)
 
-        var time = 0
+        var time = 0L
         val date = new Date(0)
         val format = "yyyy-MM-dd HH:mm:ss.SSS"
         val dateFormat = new SimpleDateFormat(format)
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
         val source = Source.fromFile(src)
         try {
             val lines = source.getLines().toList
