@@ -40,3 +40,6 @@ The scale factor can be set to `0.003`, `0.1`, `0.3`, `1`, `3`, `10`, ...
 3. Create a database in PostgreSql with name `snb_sf${SF}`
 4. Run `bash snb_data_convert.sh`
 5. The converted data can be found under `${BASE_PATH}/SF_${SF}`
+
+## WindowSize
+The window size is 180 days by default, and the window step must be half of the window size. You can set window size to another value by replacing 180 in `snb_data_convert.sh`. Then you should substitute 15552000 with the corresponding seconds. 
