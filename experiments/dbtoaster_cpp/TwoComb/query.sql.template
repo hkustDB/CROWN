@@ -1,0 +1,19 @@
+CREATE STREAM Graph1(src int, dst int)
+  FROM FILE 'graph1.csv' LINE DELIMITED csv (delimiter := '|');
+
+CREATE STREAM Graph2(src int, dst int)
+  FROM FILE 'graph2.csv' LINE DELIMITED csv (delimiter := '|');
+
+CREATE STREAM Graph3(src int, dst int)
+  FROM FILE 'graph3.csv' LINE DELIMITED csv (delimiter := '|');
+
+CREATE STREAM V1(src int)
+  FROM FILE 'v1.csv' LINE DELIMITED csv (delimiter := '|');
+
+CREATE STREAM V2(dst int)
+  FROM FILE 'v2.csv' LINE DELIMITED csv (delimiter := '|');
+
+
+SELECT A.src, B.src, C.src, C.dst
+FROM Graph1 AS A, Graph2 AS B, Graph3 AS C, V1 AS D, V2 AS E
+WHERE A.dst = B.src AND B.dst = C.src AND D.src = A.src AND E.dst = C.dst

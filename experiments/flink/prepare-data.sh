@@ -12,6 +12,11 @@ data_path=$3
 
 CONFIG_FILES=("${SCRIPT_PATH}/${experiment_name}/common.cfg" "${SCRIPT_PATH}/experiment.cfg" "${PARENT_PATH}/experiment.cfg")
 
+# TODO: compute window size and step for TwoComb
+if [[ ${experiment_name} = "TwoComb" ]]; then
+    exit 0
+fi
+
 if [[ "${experiment_mode}" == "perf" ]]; then
     target_path="${SCRIPT_PATH}/src/main/resources/${experiment_name}"
     mkdir -p "${target_path}"
