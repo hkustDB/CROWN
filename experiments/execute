@@ -139,6 +139,126 @@ if [[ -n ${opt_result_file} ]]; then
     touch ${opt_result_file}
 fi
 
+function execute_dbtoster {
+    experiment_name=$1
+    available_cores=$2
+    CONFIG_FILES=("${SCRIPT_PATH}/dbtoaster/${experiment_name}/perf.cfg" "${SCRIPT_PATH}/dbtoaster/experiment.cfg")
+    execute_log="${SCRIPT_PATH}/dbtoaster/log/execute-${experiment_name}.log"
+    execution_time_log="${SCRIPT_PATH}/dbtoaster/log/execution-time.log"
+    mkdir -p "${SCRIPT_PATH}/dbtoaster/log"
+    chmod -f g=u "${SCRIPT_PATH}/dbtoaster/log"
+    rm -f ${execute_log}
+    touch ${execute_log}
+    chmod -f g=u ${execute_log}
+    rm -f ${execution_time_log}
+    touch ${execution_time_log}
+    chmod -f g=u ${execution_time_log}
+    enum_points_list=$(cat "${SCRIPT_PATH}/dbtoaster/${experiment_name}/enum-points-perf.txt")
+    timeout -s SIGKILL 14400s taskset -c "${available_cores}" java -Xms128g -Xmx128g -jar "${SCRIPT_PATH}/dbtoaster/target/experiments-dbtoaster.jar" ${experiment_name} ${execution_time_log} -b$(prop 'batch.size.num') -d$(prop 'dataset.name') --cfg-file /spark.config.${experiment_name}.perf "-ep${enum_points_list}" --no-output >> ${execute_log} 2>&1
+}
+
+function execute_dbtoster_cpp {
+    experiment_name=$1
+    available_cores=$2
+    CONFIG_FILES=("${SCRIPT_PATH}/dbtoaster_cpp/experiment.cfg")
+    execute_log="${SCRIPT_PATH}/dbtoaster_cpp/log/execute-${experiment_name}.log"
+    mkdir -p "${SCRIPT_PATH}/dbtoaster_cpp/log"
+    chmod -f g=u "${SCRIPT_PATH}/dbtoaster_cpp/log"
+    rm -f ${execute_log}
+    touch ${execute_log}
+    chmod -f g=u ${execute_log}
+    timeout -s SIGKILL 14400s taskset -c "${available_cores}" "${SCRIPT_PATH}/dbtoaster_cpp/${experiment_name}/query.exe" -r 1 >> ${execute_log} 2>&1
+}
+
+function execute_flink {
+    experiment_name=$1
+    available_cores=$2
+    execute_log="${SCRIPT_PATH}/flink/log/execute-${experiment_name}.log"
+    mkdir -p "${SCRIPT_PATH}/flink/log"
+    chmod -f g=rwx "${SCRIPT_PATH}/flink/log"
+    rm -f ${execute_log}
+    touch ${execute_log}
+    chmod -f g=rw ${execute_log}
+    touch "${SCRIPT_PATH}/flink/log/execution-time.log"
+    chmod -f g=rw "${SCRIPT_PATH}/flink/log/execution-time.log"
+    timeout -s SIGKILL 14400s taskset -c "${available_cores}" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/flink/log/execution-time.log -jar "${SCRIPT_PATH}/flink/target/experiments-flink-jar-with-dependencies.jar" "${experiment_name}" >> ${execute_log} 2>&1
+}
+
+function execute_trill {
+    experiment_name=$1
+    available_cores=$2
+    CONFIG_FILES=("${SCRIPT_PATH}/trill/${experiment_name}/common.cfg" "${SCRIPT_PATH}/trill/experiment.cfg")
+    execute_log="${SCRIPT_PATH}/trill/log/execute-${experiment_name}.log"
+    execution_time_log="${SCRIPT_PATH}/trill/log/execution-time.log"
+    mkdir -p "${SCRIPT_PATH}/trill/log"
+    chmod -f g=rwx "${SCRIPT_PATH}/trill/log"
+    rm -f ${execute_log}
+    touch ${execute_log}
+    chmod -f g=rw ${execute_log}
+    rm -f ${execution_time_log}
+    touch ${execution_time_log}
+    chmod -f g=rw ${execution_time_log}
+    cd "${SCRIPT_PATH}/trill"
+    with_output=$(prop 'write.result.to.file' 'false')
+    timeout -s SIGKILL 14400s taskset -c "${available_cores}" dotnet "${SCRIPT_PATH}/trill/bin/Debug/net5.0/experiments-trill.dll" "${experiment_name}" "${execution_time_log}" $(prop 'periodic.punctuation.policy.time') $(prop 'filter.condition.value' '-1') "withOutput=${with_output}" >> ${execute_log} 2>&1
+    cd ${SCRIPT_PATH}
+}
+
+function execute_crown {
+    experiment_name=$1
+    available_cores=$2
+    CONFIG_FILES=("${SCRIPT_PATH}/crown/${experiment_name}/perf.cfg" "${SCRIPT_PATH}/crown/${experiment_name}/common.cfg" "${SCRIPT_PATH}/crown/experiment.cfg")
+    mkdir -p "${SCRIPT_PATH}/crown/log"
+    chmod -f g=rwx "${SCRIPT_PATH}/crown/log"
+    execute_log="${SCRIPT_PATH}/crown/log/execute-${experiment_name}.log"
+    rm -f ${execute_log}
+    touch ${execute_log}
+    chmod -f g=rw ${execute_log}
+    crown_home=$(prop 'crown.code.home')
+    crown_mode=$(prop 'crown.experiment.mode')
+    input_file=$(prop 'path.to.data.csv')
+    delta_enable=$(prop 'crown.delta.enum.enable' 'false')
+    full_enable=$(prop 'crown.full.enum.enable' 'true')
+    filter_value=$(prop 'filter.condition.value' '-1')
+    cd "${crown_home}"
+    if [[ ${crown_mode} = 'minicluster' ]]; then
+        crown_class_name=$(prop "minicluster.entry.class")
+        input_path=$(dirname "${input_file}")
+        input_file_name=$(basename "${input_file}")
+        parallelism=$(prop 'crown.minicluster.parallelism')
+        # TBD: filter
+        # add --n ${filter_value} when filter_value >= 0
+        if [[ ${filter_value} -ge 0 ]]; then
+            timeout -s SIGKILL 14400s taskset -c "${available_cores}" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
+        else
+            timeout -s SIGKILL 14400s taskset -c "${available_cores}" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
+        fi
+    else
+        crown_test_name=$(prop "test.entry.class")
+        timeout -s SIGKILL 14400s mvn "test" "-Dsuites=${crown_test_name}" "-Dconfig=srcFile=${input_file},deltaEnumEnable=${delta_enable},fullEnumEnable=${full_enable}" >> ${execute_log} 2>&1
+    fi
+    cd ${SCRIPT_PATH}
+}
+
+function execute_system {
+    launch_system=$1
+    launch_experiment=$2
+    available_cores=$3
+    if [[ "${launch_system}" == "dbtoaster" ]]; then
+        execute_dbtoster "${launch_experiment}" "${available_cores}"
+    elif [[ "${launch_system}" == "dbtoaster_cpp" ]]; then
+        execute_dbtoster_cpp "${launch_experiment}" "${available_cores}"
+    elif [[ "${launch_system}" == "flink" ]]; then
+        execute_flink "${launch_experiment}" "${available_cores}"
+    elif [[ "${launch_system}" == "trill" ]]; then
+        execute_trill "${launch_experiment}" "${available_cores}"
+    elif [[ "${launch_system}" == "crown" ]]; then
+        execute_crown "${launch_experiment}" "${available_cores}"
+    else
+        echo "error for execute_system ${launch_system}"
+    fi
+}
+
 function launch {
     launch_experiment=$1
     launch_system1=''
@@ -149,7 +269,9 @@ function launch {
     if [[ $# -gt 1 ]]; then
         launch_system=$2
         launch_system1=${launch_system}
-        bash "${SCRIPT_PATH}/${launch_system}/execute.sh" "${launch_experiment}" "8" &
+        # Combine bash "${SCRIPT_PATH}/${launch_system}/execute.sh" "${launch_experiment}" "8" &
+        execute_system "${launch_system}" "${launch_experiment}" "8" &
+        # Combine end
         pid1=$!
     fi
     # params: exp sys1 sys2 sys3 ... -> sys1 sys2 sys3 ...
@@ -157,7 +279,9 @@ function launch {
     if [[ $# -gt 1 ]]; then
         launch_system=$2
         launch_system2=${launch_system}
-        bash "${SCRIPT_PATH}/${launch_system}/execute.sh" "${launch_experiment}" "16" &
+        # Combine bash "${SCRIPT_PATH}/${launch_system}/execute.sh" "${launch_experiment}" "16" &
+        execute_system "${launch_system}" "${launch_experiment}" "16" &
+        # Combine end
         pid2=$!
     fi
     # params: sys1 sys2 sys3 ... -> sys2 sys3 ...
@@ -180,6 +304,144 @@ function launch {
     fi
 }
 
+function execute_report_dbtoster {
+    experiment=$1
+    exec_time=$(grep "Execution Time:" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $3}')
+    echo ${exec_time}
+}
+
+function execute_report_dbtoster_cpp {
+    experiment_name=$1
+    ms=$(tail "${SCRIPT_PATH}/dbtoaster_cpp/log/execute-${experiment_name}.log" | grep "Execution time" | awk '{print $9}')
+    echo "scale=2; x=(${ms}/1000);  if(x<1){\"0\"};  x" | bc
+}
+
+function execute_report_flink {
+    start=$(cat "${SCRIPT_PATH}/flink/log/execution-time.log" | awk '/Job .* (.*) switched from state CREATED to RUNNING./{print $1; exit}')
+    if [[ -z ${start} ]]; then
+        err "extract start time of flink job failed."
+        exit 1
+    fi
+    end=$(cat "${SCRIPT_PATH}/flink/log/execution-time.log" | awk '/Job .* (.*) switched from state RUNNING to FINISHED./{print $1; exit}')
+    if [[ -z ${end} ]]; then
+        err "extract end time of flink job failed."
+        exit 1
+    fi
+    start_seconds=$(date --date="${start}" +%s)
+    end_seconds=$(date --date="${end}" +%s)
+    total=$((end_seconds-start_seconds))
+    # handle the corner case where the job ends on the next day
+    if [[ ${total} -lt 0 ]]; then
+    total=$((${total} + 86400))
+    fi
+    echo "${total}.00"
+}
+
+function execute_report_trill {
+    echo $(cat "${SCRIPT_PATH}/trill/log/execution-time.log")
+}
+
+function execute_report_crown {
+    experiment_name=$1
+    CONFIG_FILES=("${SCRIPT_PATH}/crown/${experiment_name}/perf.cfg" "${SCRIPT_PATH}/crown/${experiment_name}/common.cfg" "${SCRIPT_PATH}/crown/experiment.cfg")
+    crown_home=$(prop 'crown.code.home')
+    crown_mode=$(prop 'crown.experiment.mode')
+    if [[ "${crown_mode}" = 'minicluster' ]]; then
+        # run in MiniCluster, extract time from log
+        execution_log="${SCRIPT_PATH}/crown/log/execute-${experiment_name}.log"
+        exec_time=$(grep "StartTime" "${execution_log}" | grep "EndTime" | grep "AccumulateTime" | awk '{print $13}' | sort -n | tail -n1)
+        exec_time_in_sec=$(echo "scale=2; ${exec_time}/1000000000" | bc)
+        echo "${exec_time_in_sec}"
+    else
+        # run in ScalaTest, extract time from test report
+        report_path="${crown_home}/target/surefire-reports/TestSuite.txt"
+        total=$(grep "+ Execution time" ${report_path} | awk '{print $4}')
+        echo "${total}"
+    fi
+}
+
+function execute_report {
+    report_system=$1
+    report_experiment=$2
+    exetime=''
+    if [[ "${report_system}" == "dbtoaster" ]]; then
+        exetime=$(execute_report_dbtoster "${report_experiment}")
+        echo "${exetime}"
+    elif [[ "${report_system}" == "dbtoaster_cpp" ]]; then
+        exetime=$(execute_report_dbtoster_cpp "${report_experiment}")
+        echo "${exetime}"
+    elif [[ "${report_system}" == "flink" ]]; then
+        exetime=$(execute_report_flink "${report_experiment}")
+        echo "${exetime}"
+    elif [[ "${report_system}" == "trill" ]]; then
+        exetime=$(execute_report_trill "${report_experiment}")
+        echo "${exetime}"
+    elif [[ "${report_system}" == "crown" ]]; then
+        exetime=$(execute_report_crown "${report_experiment}")
+        echo "${exetime}"
+    else
+        echo "error for execute_report ${report_system}"
+    fi
+}
+
+function report_config_dbtoster {
+    experiment_name=$1
+    CONFIG_FILES=("${SCRIPT_PATH}/dbtoaster/experiment.cfg")
+    batch=$(prop 'batch.size.num')
+    echo "batch size = ${batch}"
+}
+
+function report_config_flink {
+    experiment_name=$1
+    CONFIG_FILES=("${SCRIPT_PATH}/flink/experiment.cfg")
+    parallelism=$(prop 'flink.perf.parallelism')
+    echo "parallelism = ${parallelism}"
+}
+
+function report_config_trill {
+    experiment_name=$1
+    CONFIG_FILES=("${SCRIPT_PATH}/trill/experiment.cfg")
+    punctuation=$(prop 'periodic.punctuation.policy.time')
+    echo "punctuation time = ${punctuation}"
+}
+
+function report_config_crown {
+    experiment_name=$1
+    CONFIG_FILES=("${SCRIPT_PATH}/crown/${experiment_name}/common.cfg" "${SCRIPT_PATH}/crown/experiment.cfg")
+    mode=$(prop 'crown.experiment.mode')
+    echo "mode = ${mode},"
+    if [[ ${mode} = 'minicluster' ]]; then
+        class=$(prop 'minicluster.entry.class')
+        echo "class = ${class},"
+        parallelism=$(prop 'crown.minicluster.parallelism')
+        echo "parallelism = ${parallelism}"
+    else
+        class=$(prop 'test.entry.class')
+        echo "class = ${class}"
+    fi
+}
+
+function report_config {
+    report_system=$1
+    report_experiment=$2
+    config=''
+    if [[ "${report_system}" == "dbtoaster" ]]; then
+        config=$(report_config_dbtoster "${report_experiment}")
+        echo "${config}"
+    elif [[ "${report_system}" == "flink" ]]; then
+        config=$(report_config_flink "${report_experiment}")
+        echo "${config}"
+    elif [[ "${report_system}" == "trill" ]]; then
+        config=$(report_config_trill "${report_experiment}")
+        echo "${config}"
+    elif [[ "${report_system}" == "crown" ]]; then
+        config=$(report_config_crown "${report_experiment}")
+        echo "${config}"
+    else
+        echo "error for report_config ${report_system}"
+    fi
+}
+
 function report {
     report_experiment=$1
     report_system=$2
@@ -189,7 +451,9 @@ function report {
     if [[ ${ret_val} -ne 0 ]]; then
         is_error_or_timeout=1
     else
-        sec=$(bash "${SCRIPT_PATH}/${report_system}/extract-time.sh" "${report_experiment}")
+        # Combine sec=$(bash "${SCRIPT_PATH}/${report_system}/extract-time.sh" "${report_experiment}")
+        sec=$(execute_report "${report_system}" "${report_experiment}")
+        # Combine end
     fi
 
     if [[ -n ${opt_result_file} ]]; then
@@ -200,9 +464,11 @@ function report {
             echo "      Timeout or Error" >> ${opt_result_file}
         fi
 
-        if [[ -f "${SCRIPT_PATH}/${report_system}/report-config.sh" ]]; then
+        if [[ "${report_system}" != "dbtoaster_cpp" ]]; then
             echo "      Configurations:" >> ${opt_result_file}
-            report_config_string=$(bash "${SCRIPT_PATH}/${report_system}/report-config.sh" "${report_experiment}")
+            # Combine report_config_string=$(bash "${SCRIPT_PATH}/${report_system}/report-config.sh" "${report_experiment}")
+            report_config_string=$(report_config "${report_system}" "${report_experiment}")
+            # Combine end
             echo ${report_config_string} | awk -F, 'BEGIN{INDENT="       "}{printf " %s%s%s",INDENT,$1,ORS; for(i=2;i<=NF;i++) printf "%s%s%s",INDENT,$i,ORS}' >> ${opt_result_file}
         fi
     else
@@ -212,9 +478,11 @@ function report {
         else
             echo "      Timeout or Error"
         fi
-        if [[ -f "${SCRIPT_PATH}/${report_system}/report-config.sh" ]]; then
+        if [[ "${report_system}" != "dbtoaster_cpp" ]]; then
             echo "      Configurations:"
-            report_config_string=$(bash "${SCRIPT_PATH}/${report_system}/report-config.sh" "${report_experiment}")
+            # Combine report_config_string=$(bash "${SCRIPT_PATH}/${report_system}/report-config.sh" "${report_experiment}")
+            report_config_string=$(report_config "${report_system}" "${report_experiment}")
+            # Combine end
             echo ${report_config_string} | awk -F, 'BEGIN{INDENT="       "}{printf " %s%s%s",INDENT,$1,ORS; for(i=2;i<=NF;i++) printf "%s%s%s",INDENT,$i,ORS}'
         fi
     fi
