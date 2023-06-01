@@ -135,7 +135,6 @@ if [[ -n ${opt_prepare_system} ]]; then
     fi
 fi
 
-# TBD: how to understand
 # if dbtoaster_cpp is set in -p but dbtoaster is not set, prepare dbtoaster instead
 if [[ ${contains_dbtoaster_cpp} -eq 1 && ${contains_dbtoaster} -eq 0 ]]; then
     opt_prepare_system_names+=('dbtoaster')
@@ -264,6 +263,7 @@ for experiment in ${opt_experiment_names[@]}; do
 
         # Combine bash ${SCRIPT_PATH}/data/produce-data.sh ${experiment}
         # >> bash "${SCRIPT_PATH}/data/${experiment}/produce-data.sh"
+        # TBD: support experiments maybe increase and need to modify.
         support_experiment_names=('length3_filter' 'length3_project' 'length4_filter' 'length4_project' 'star_cnt' 'dumbbell')
         if [[ "${support_experiment_names[*]}" =~ "${experiment}" ]]; then
             CONFIG_FILES=("${SCRIPT_PATH}/data/tools.cfg" "${SCRIPT_PATH}/experiment.cfg")
@@ -282,7 +282,6 @@ for experiment in ${opt_experiment_names[@]}; do
             java -jar "${tools_home}/target/data-tools.jar" -w "${graph_raw_path}" "${graph_output_path}" "${window_factor}" >> ${log_file_temp} 2>&1
             chmod -Rf g=rw "${SCRIPT_PATH}/data/${experiment}/"
         else
-            # TBD: support experiments maybe increase and need to modify.
             echo "Not support for experiment ${experiment}" >> ${log_file}
         fi
         # Combine end
@@ -305,10 +304,9 @@ for experiment in ${opt_experiment_names[@]}; do
         if [[ "${system}" == "dbtoaster" ]]; then
             # Combine bash ${SCRIPT_PATH}/${system}/prepare-data.sh ${experiment} ${data_path}
             if [[ -f "${SCRIPT_PATH}/dbtoaster/${experiment}/prepare-data.sh" ]]; then 
-                # TBD: Combine
+                # TBD: need combine
                 bash "${SCRIPT_PATH}/dbtoaster/${experiment}/prepare-data.sh" ${data_path}
             else
-                # TBD: what is and how to access perf.cfg and func.cfg
                 CONFIG_FILES=("${SCRIPT_PATH}/dbtoaster/${experiment}/perf.cfg" "${SCRIPT_PATH}/dbtoaster/${experiment}/common.cfg" "${SCRIPT_PATH}/dbtoaster/experiment.cfg")
                 log_file_temp="${SCRIPT_PATH}/dbtoaster/log/prepare-data-${experiment}.log"
                 mkdir -p "${SCRIPT_PATH}/dbtoaster/log"
@@ -333,14 +331,13 @@ for experiment in ${opt_experiment_names[@]}; do
                         ${hdfs_path} dfs -put -f "${file}" ${root}/${dist}/${dataset}/${filename} >> ${log_file_temp} 2>&1
                         assert "HDFS put file failed."
                     done
-                    # TBD: Need to get data enum-points-perf.txt
                     cp "${data_path}/enum-points-perf.txt" "${SCRIPT_PATH}/dbtoaster/${experiment}/enum-points-perf.txt"
                 else
                     files=$(find "${data_path}" -maxdepth 1 -type f -name '*.csv')
                     for file in ${files[@]}
                     do
                         filename=$(basename ${file})
-                        # TBD: convertdata
+                        # TBD: need combine
                         bash "${SCRIPT_PATH}/data/convert-data.sh" "dbtoaster" "${file}" "/tmp/${filename}.dbtoaster.tmp" "${multiplier}" "${batch_size}" "${SCRIPT_PATH}/dbtoaster/${experiment}/enum-points-perf.txt"
                         ${hdfs_path} dfs -put -f /tmp/${filename}.dbtoaster.tmp ${root}/${dist}/${dataset}/${filename} >> ${log_file_temp} 2>&1
                         assert "HDFS put file failed."
@@ -360,7 +357,6 @@ for experiment in ${opt_experiment_names[@]}; do
             chmod -f g=u ${log_file_temp}
             dbtoaster_home=$(prop 'dbtoaster.backend.home')
             cd ${dbtoaster_home}
-            # TBD: query.sql?
             query_file="${SCRIPT_PATH}/dbtoaster/${experiment}/query.sql"
             query_template_file="${SCRIPT_PATH}/dbtoaster/${experiment}/query.sql.template"
             output_path="${SCRIPT_PATH}/dbtoaster/src/main/scala/experiments/dbtoaster/${experiment}"
@@ -409,7 +405,7 @@ for experiment in ${opt_experiment_names[@]}; do
             cd ${SCRIPT_PATH}
             # Combine end
         elif [[ "${system}" == "dbtoaster_cpp" ]]; then
-            # TBD: to much script
+            # TBD: need combine(to much script)
             bash ${SCRIPT_PATH}/${system}/prepare-data.sh ${experiment} ${data_path}
 
             # Combine bash ${SCRIPT_PATH}/${system}/prepare-query.sh ${experiment}
@@ -422,7 +418,6 @@ for experiment in ${opt_experiment_names[@]}; do
             chmod -f g=u ${log_file_temp}
             dbtoaster_home=$(prop 'dbtoaster.backend.home')
             cd ${dbtoaster_home}
-            # TBD: query.sql
             query_file="${SCRIPT_PATH}/dbtoaster_cpp/${experiment}/query.sql"
             output_path="${SCRIPT_PATH}/dbtoaster_cpp/${experiment}"
             mkdir -p ${output_path}
@@ -441,7 +436,6 @@ for experiment in ${opt_experiment_names[@]}; do
         elif [[ "${system}" == "flink" ]]; then
             # Combine bash ${SCRIPT_PATH}/${system}/prepare-data.sh ${experiment} ${data_path}
             CONFIG_FILES=("${SCRIPT_PATH}/flink/${experiment}/common.cfg" "${SCRIPT_PATH}/flink/experiment.cfg" "${SCRIPT_PATH}/experiment.cfg")
-            # TBD: TwoComb
             if [[ ${experiment} = "TwoComb" ]]; then
                 exit 0
             fi
@@ -473,7 +467,7 @@ for experiment in ${opt_experiment_names[@]}; do
                 files=$(find ${data_path} -maxdepth 1 -type f -name '*.raw')
                 for file in ${files[@]}; do
                     name=$(basename "${file}")
-                    # TBD: convertdata
+                    # TBD: need combine
                     bash "${SCRIPT_PATH}/data/convert-data.sh" "flink" "${data_path}/${name}" "${SCRIPT_PATH}/flink/${experiment}/${name}"
                     echo "path.to.${name}=${SCRIPT_PATH}/flink/${experiment}/${name}" >> "${target_path}/perf.cfg"
                     echo "hop.window.step=${half_window_size}" >> "${target_path}/perf.cfg"
@@ -524,7 +518,7 @@ for experiment in ${opt_experiment_names[@]}; do
             fi
 
             if [[ -f "${SCRIPT_PATH}/trill/${experiment}/prepare-data.sh" ]]; then
-                # TBD: Combine
+                # TBD: need Combine
                 bash "${SCRIPT_PATH}/trill/${experiment}/prepare-data.sh" "${data_path}"
             else
                 if [[ ${experiment} = snb* ]]; then
@@ -535,7 +529,7 @@ for experiment in ${opt_experiment_names[@]}; do
                     files=$(find ${data_path} -maxdepth 1 -type f -name '*.csv')
                     for file in ${files[@]}; do
                         name=$(basename "${file}")
-                        # TBD: convertdata
+                        # TBD: need combine
                         bash "${SCRIPT_PATH}/data/convert-data.sh" "trill" "${data_path}/${name}" "${SCRIPT_PATH}/trill/${experiment}/${name}"
                     done
                 fi
@@ -550,7 +544,7 @@ for experiment in ${opt_experiment_names[@]}; do
             CONFIG_FILES=("${SCRIPT_PATH}/crown/experiment.cfg")
 
             if [[ -f "${SCRIPT_PATH}/crown/${experiment}/prepare-data.sh" ]]; then
-                # TBD: Combine
+                # TBD: need combine
                 bash "${SCRIPT_PATH}/crown/${experiment}/prepare-data.sh" ${data_path}
             else
                 log_file_temp="${SCRIPT_PATH}/crown/log/prepare-data-${experiment}.log"

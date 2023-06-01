@@ -13,11 +13,11 @@ key="length3_project.perf.path"
 pattern="^\\s*<add\\s\\s*key\\s*=\\s*\"${key}\"\\s\\s*value\\s*=\\s*\".*\"\\s*\/>\\s*$"
 app_config="${PARENT_PATH}/app.config"
 
-target_path="${SCRIPT_PATH}/perf/data.csv"
+target_path="${SCRIPT_PATH}/data.csv"
 rm -f ${target_path}
 awk 'BEGIN{cnt=1}{printf "%s%s%s%s",cnt++,",",$1,ORS}' "${data_path}/data.raw" > "${target_path}"
 
-value="${SCRIPT_PATH}/perf"
+value="${SCRIPT_PATH}"
 
 grep -q ${pattern} ${app_config} \
 && sed -i "s#${pattern}#<add key=\"${key}\" value=\"${value}\"/>#g" ${app_config} \

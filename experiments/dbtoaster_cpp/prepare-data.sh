@@ -7,7 +7,6 @@ PARENT_PATH=$(dirname "${SCRIPT_PATH}")
 source "${PARENT_PATH}/common.sh"
 
 experiment_name=$1
-experiment_mode=$2
-data_path=$3
+data_path=$2
 
-bash "${SCRIPT_PATH}/${experiment_name}/prepare-data.sh" "${experiment_mode}" "${data_path}"
+bash "${SCRIPT_PATH}/${experiment_name}/prepare-data.sh" "${data_path}"
