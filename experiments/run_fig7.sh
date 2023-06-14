@@ -37,12 +37,14 @@ function run_task_fig7 {
     graphdir=$(prop 'graph.input.path')
     graphname=$(prop "task${current_task}.input.file")
     graph_input_path="${graphdir}/${graphname}.txt"
+    mkdir -p "${SCRIPT_PATH}/data/length3"
     graph_raw_path="${SCRIPT_PATH}/data/length3/data.raw"
     graph_output_path="${SCRIPT_PATH}/data/length3/data.csv"
     cp -f ${graph_input_path} "${graph_raw_path}"
     java -jar "${tools_home}/target/data-tools.jar" "-c3" "crown" "${graph_raw_path}" "${graph_output_path}" "G1,G3" "${window_factor}" "G2" >> ${log_file_temp} 2>&1
     chmod -Rf g=rw "${SCRIPT_PATH}/data/length3/"
 
+    mkdir -p "${SCRIPT_PATH}/crown/length3"
     target_path="${SCRIPT_PATH}/crown/length3/perf.cfg"
     rm -f ${target_path}
     touch ${target_path}

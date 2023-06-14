@@ -318,6 +318,7 @@ function build_task {
         rm -f ${log_file_temp}
         touch ${log_file_temp}
         chmod -f g=rw ${log_file_temp}
+        mkdir -p "${SCRIPT_PATH}/crown/${experiment}"
         target_path="${SCRIPT_PATH}/crown/${experiment}/perf.cfg"
         rm -f ${target_path}
         touch ${target_path}
@@ -373,6 +374,7 @@ for experiment in ${figure10_experiment_names[@]}; do
             chmod -f g=rw ${log_file_temp}
             graphdir=$(prop 'graph.input.path')
             graph_input_path="${graphdir}/epinions.txt"
+            mkdir -p "${SCRIPT_PATH}/data/${experiment}"
             graph_raw_path="${SCRIPT_PATH}/data/${experiment}/data.raw"
             graph_output_path="${SCRIPT_PATH}/data/${experiment}"
             cp -f ${graph_input_path} "${graph_raw_path}"
@@ -393,6 +395,7 @@ for experiment in ${figure10_experiment_names[@]}; do
             # figure10 use epinions.txt
             graphdir=$(prop 'graph.input.path')
             graph_input_path="${graphdir}/epinions.txt"
+            mkdir -p "${SCRIPT_PATH}/data/${experiment}"
             graph_raw_path="${SCRIPT_PATH}/data/${experiment}/data.raw"
             graph_output_path="${SCRIPT_PATH}/data/${experiment}/data.csv"
             cp -f ${graph_input_path} "${graph_raw_path}"
