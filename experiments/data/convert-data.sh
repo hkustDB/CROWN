@@ -10,7 +10,7 @@ system_name=$1
 src_file=$2
 dst_file=$3
 
-CONFIG_FILES=("${SCRIPT_PATH}/tools.cfg")
+CONFIG_FILES=("${PARENT_PATH}/experiment.cfg")
 
 log_file="${SCRIPT_PATH}/log/convert-data-${system_name}.log"
 

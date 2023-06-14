@@ -1,0 +1,32 @@
+CREATE STREAM Graph1(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph2(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph3(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph4(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph5(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph6(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+CREATE STREAM Graph7(src int, dst int)
+  FROM FILE 'data.csv' LINE DELIMITED csv;
+
+
+SELECT *
+FROM Graph1 AS A, Graph2 AS B, Graph3 AS C, Graph4 AS D, Graph5 AS E, Graph6 AS F, Graph7 AS G
+WHERE A.dst = B.src
+    AND B.dst = C.src
+    AND C.dst = A.src
+    AND E.dst = F.src
+    AND F.dst = G.src
+    AND G.dst = E.src
+    AND D.src = C.dst
+    AND D.dst = E.src

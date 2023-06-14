@@ -1,17 +1,17 @@
 CREATE STREAM Graph1(src int, dst int)
-  FROM FILE 'graph1.csv' LINE DELIMITED csv (delimiter := '|');
+  FROM FILE 'dbtoaster_cpp.graph1.csv' LINE DELIMITED csv (delimiter := '|');
 
 CREATE STREAM Graph2(src int, dst int)
-  FROM FILE 'graph2.csv' LINE DELIMITED csv (delimiter := '|');
+  FROM FILE 'dbtoaster_cpp.graph2.csv' LINE DELIMITED csv (delimiter := '|');
 
 CREATE STREAM Graph3(src int, dst int)
-  FROM FILE 'graph3.csv' LINE DELIMITED csv (delimiter := '|');
+  FROM FILE 'dbtoaster_cpp.graph3.csv' LINE DELIMITED csv (delimiter := '|');
 
 CREATE STREAM V1(src int)
-  FROM FILE 'v1.csv' LINE DELIMITED csv (delimiter := '|');
+  FROM FILE 'dbtoaster_cpp.v1.csv' LINE DELIMITED csv (delimiter := '|');
 
 CREATE STREAM V2(dst int)
-  FROM FILE 'v2.csv' LINE DELIMITED csv (delimiter := '|');
+  FROM FILE 'dbtoaster_cpp.v2.csv' LINE DELIMITED csv (delimiter := '|');
 
 
 SELECT A.src, B.src, C.src, C.dst

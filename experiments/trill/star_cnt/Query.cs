@@ -7,8 +7,6 @@ using Csv;
 namespace Star_cnt
 {
     class Query {
-        static int inputSize = 500000;
-        static int windowSize = Convert.ToInt32(0.2 * inputSize); 
         public static string[] StreamEventToStrings(StreamEvent<Result> ev) {
             if (ev.IsData) {
                 return new string[] { 
@@ -25,7 +23,7 @@ namespace Star_cnt
             }
         }
 
-        public static List<string[]> Execute(string path, ulong punctuationTime, int filterCondition, int outputMode) {
+        public static List<string[]> Execute(string path, ulong punctuationTime, int windowSize, int filterCondition, int outputMode) {
             var stream1 = CsvFileReader<Row, Edge>.GetStartStreamable(path + "/data.csv", punctuationTime,
                 line => { 
                     var strs = line.Split(",");

@@ -7,8 +7,6 @@ using Csv;
 namespace Length3_filter
 {
     class Query {
-        static int inputSize = 500000;
-        static int windowSize = Convert.ToInt32(0.2 * inputSize); 
         public static string[] StreamEventToStrings(StreamEvent<Path> ev) {
             if (ev.IsData) {
                 return new string[] { 
@@ -27,7 +25,7 @@ namespace Length3_filter
             }
         }
 
-        public static List<string[]> Execute(string path, ulong punctuationTime, int filterCondition, int outputMode) {
+        public static List<string[]> Execute(string path, ulong punctuationTime, int windowSize, int filterCondition, int outputMode) {
             Console.WriteLine("Length3_filter with filter value = " + filterCondition);
             var stream1 = CsvFileReader<Row, Edge>.GetStartStreamable(path + "/data.csv", punctuationTime,
                 line => { 

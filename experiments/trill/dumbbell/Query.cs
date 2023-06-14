@@ -7,8 +7,6 @@ using Csv;
 namespace Dumbbell
 {
     class Query {
-        static int inputSize = 24186;
-        static int windowSize = Convert.ToInt32(0.2 * inputSize); 
         public static string[] StreamEventToStrings(StreamEvent<Result> ev) {
             if (ev.IsData) {
                 return new string[] { 
@@ -16,11 +14,7 @@ namespace Dumbbell
                     ev.StartTime.ToString(), 
                     ev.EndTime.ToString(),
                     ev.Payload.a.ToString(), 
-                    ev.Payload.b.ToString(),
-                    ev.Payload.c.ToString(), 
-                    ev.Payload.d.ToString(),
-                    ev.Payload.e.ToString(), 
-                    ev.Payload.f.ToString()
+                    ev.Payload.b.ToString()
                 };
             } else if (ev.IsPunctuation) {
                 return null;
@@ -29,7 +23,7 @@ namespace Dumbbell
             }
         }
 
-        public static List<string[]> Execute(string path, ulong punctuationTime, int filterCondition, int outputMode) {
+        public static List<string[]> Execute(string path, ulong punctuationTime, int windowSize, int filterCondition, int outputMode) {
             var streamGraph = CsvFileReader<Row, Edge>.GetStartStreamable(path + "/data.csv", punctuationTime,
                 line => { 
                     var strs = line.Split(",");
@@ -45,7 +39,7 @@ namespace Dumbbell
                 .Select(t => new {a = t.a, b = t.b, c = t.c});
 
             var joinedLeft = streamTriangle.Join(streamGraph, l => l.c, r => r.src, (l, r) => new {a = l.a, b = l.b, c = l.c, dst = r.dst});
-            var joinedRight = joinedLeft.Join(streamTriangle, l => l.dst, r => r.a, (l, r) => new Result(l.a, l.b, l.c, r.a, r.b, r.c));
+            var joinedRight = joinedLeft.Join(streamTriangle, l => l.dst, r => r.a, (l, r) => new Result(l.c, r.a));
             
             var distinct = joinedRight.GroupApply(p => p, data => data.Distinct(), (group, value) => value).Stitch();
 

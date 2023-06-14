@@ -4,7 +4,7 @@ CREATE TABLE V2 (
     WATERMARK FOR ts AS ts
 ) WITH (
     'connector' = 'filesystem',
-    'path' = 'flink.v2.csv',
+    'path' = '${path.to.flink.v2.csv}',
     'format' = 'csv',
     'csv.field-delimiter' = '|'
 )

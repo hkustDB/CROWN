@@ -5,7 +5,7 @@ CREATE TABLE Graph (
     WATERMARK FOR ts AS ts
 ) WITH (
     'connector' = 'filesystem',
-    'path' = 'flink.graph.csv',
+    'path' = '${path.to.flink.graph.csv}',
     'format' = 'csv',
     'csv.field-delimiter' = '|'
 )

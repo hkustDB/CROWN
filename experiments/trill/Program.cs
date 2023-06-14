@@ -15,10 +15,11 @@ namespace Experiments
                 string experiment = args[0];
                 string executionTimeLog = args[1];
                 ulong punctuationTime = (ulong)Convert.ToDouble(args[2]);
-                int filterCondition = Convert.ToInt32(args[3]);
-                bool withOutput = String.Equals(args[4], "withOutput=true");
+                int inputsize = Convert.ToInt32(args[3]);
+                int filterCondition = Convert.ToInt32(args[4]);
+                bool withOutput = String.Equals(args[5], "withOutput=true");
                 string path = ConfigurationManager.AppSettings[experiment + ".perf.path"];
-                exec(experiment, executionTimeLog, path, punctuationTime, filterCondition, withOutput);
+                exec(experiment, executionTimeLog, path, punctuationTime, inputsize, filterCondition, withOutput);
             }
             return 0;
         }
@@ -28,7 +29,7 @@ namespace Experiments
             System.Environment.Exit(1);
         }
 
-        private static void exec(string experiment, string executionTimeLog, string path, ulong punctuationTime, int filterCondition, bool withOutput) {
+        private static void exec(string experiment, string executionTimeLog, string path, ulong punctuationTime, int inputsize, int filterCondition, bool withOutput) {
             Assembly assembly = Assembly.GetExecutingAssembly();
             string ns = char.ToUpper(experiment[0]) + experiment.Substring(1);
             Type type = assembly.GetType(ns + ".Query");
@@ -38,7 +39,8 @@ namespace Experiments
             var mode = 0;
             if (withOutput)
                 mode = 2;
-            methodInfo.Invoke(null, new object[] { path, punctuationTime, filterCondition , mode});
+            int windowsize = Convert.ToInt32(0.2 * inputsize); 
+            methodInfo.Invoke(null, new object[] { path, punctuationTime, windowsize, filterCondition , mode});
         
             long end = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             long total = end - start;

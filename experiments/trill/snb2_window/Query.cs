@@ -56,7 +56,7 @@ namespace Snb2_window
             return Convert.ToInt64(strs[0]);
         }
 
-        public static List<string[]> Execute(string path, ulong punctuationTime, int filterCondition, int outputMode) {
+        public static List<string[]> Execute(string path, ulong punctuationTime, int windowSize, int filterCondition, int outputMode) {
 
             var knows1Stream = CsvFileReader<string[], Knows>.GetStartStreamable(path + "/trill.knows.window.csv", punctuationTime,
                 line => line.Split("|"),

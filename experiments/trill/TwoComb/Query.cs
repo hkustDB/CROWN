@@ -25,7 +25,7 @@ namespace TwoComb
             }
         }
 
-        public static List<string[]> Execute(string path, ulong punctuationTime, int filterCondition, int outputMode) {
+        public static List<string[]> Execute(string path, ulong punctuationTime, int windowSize, int filterCondition, int outputMode) {
             var stream1 = CsvFileReader<Row, Edge>.GetStartStreamable(path + "/trill.graph.csv", punctuationTime,
                 line => {
                     var strs = line.Split(",");
