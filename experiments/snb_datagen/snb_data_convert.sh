@@ -1,8 +1,8 @@
 #!/bin/bash
 
-SF="0_003"
-BASE_PATH="/path/to/snb_datagen_base"
-SRC_PATH="/path/to/snb_datagen_base/ldbc_snb_datagen_spark/out/graphs/csv/raw/composite-merged-fk"
+SF="3"
+BASE_PATH="/path/to/CROWN"
+SRC_PATH="${BASE_PATH}/ldbc_snb_datagen_spark/out/graphs/csv/raw/composite-merged-fk"
 TARGET_PATH="${BASE_PATH}/SF_${SF}"
 
 PG_USERNAME="user"
@@ -77,10 +77,10 @@ echo "pick tag_timestamp as ${tag_timestamp}"
 
 trill_data_path="${TARGET_PATH}/trill"
 mkdir -p "${trill_data_path}"
-mkdir -p "${trill_data_path}/snb1_arbitrary"
-mkdir -p "${trill_data_path}/snb2_arbitrary"
-mkdir -p "${trill_data_path}/snb3_arbitrary"
-mkdir -p "${trill_data_path}/snb4_arbitrary"
+# mkdir -p "${trill_data_path}/snb1_arbitrary"
+# mkdir -p "${trill_data_path}/snb2_arbitrary"
+# mkdir -p "${trill_data_path}/snb3_arbitrary"
+# mkdir -p "${trill_data_path}/snb4_arbitrary"
 mkdir -p "${trill_data_path}/snb1_window"
 mkdir -p "${trill_data_path}/snb2_window"
 mkdir -p "${trill_data_path}/snb3_window"
@@ -89,23 +89,29 @@ echo "save trill data to ${trill_data_path}"
 rm -f pg_tmp.sql
 touch pg_tmp.sql
 
-echo "COPY (select CAST (extract(EPOCH FROM message.m_creationdate) AS BIGINT), CAST (extract(EPOCH FROM message.m_deletionDate) AS BIGINT), (CASE WHEN m_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), m_messageid, m_ps_imagefile, m_locationip, m_browserused, m_ps_language, m_content, m_length, m_creatorid, m_locationid, m_ps_forumid, m_c_parentpostid,m_c_replyof from message where message.m_deletionDate > message.m_creationdate order by m_creationdate) to '${trill_data_path}/snb1_arbitrary/trill.message.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select  CAST (extract(EPOCH FROM p_creationdate) AS BIGINT), CAST (extract(EPOCH FROM p_deletiondate) AS BIGINT), (CASE WHEN p_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), person.p_personid, person.p_firstname, person.p_lastname, person.p_gender, person.p_birthday, person.p_locationip, person.p_browserused, person.p_placeid, person.p_language, person.p_email from person where p_deletiondate > p_creationdate order by p_creationdate) to '${trill_data_path}/snb1_arbitrary/trill.person.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select  CAST (extract(EPOCH FROM k_creationdate) AS BIGINT), CAST (extract(EPOCH FROM k_deletiondate) AS BIGINT), (CASE WHEN k_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), knows.k_person1id, knows.k_person2id from knows where k_deletiondate > k_creationdate order by k_creationdate) TO '${trill_data_path}/snb1_arbitrary/trill.knows.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select  CAST (extract(EPOCH FROM mt_creationdate) AS BIGINT), CAST (extract(EPOCH FROM mt_deletiondate) AS BIGINT), message_tag.mt_messageid, message_tag.mt_tagid from message_tag where mt_deletiondate > mt_creationdate order by mt_creationdate) TO '${trill_data_path}/snb1_arbitrary/trill.messagetag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select ${tag_timestamp}, t_tagid, t_name, t_url, t_tagclassid from tag) to '${trill_data_path}/snb1_arbitrary/trill.tag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select CAST (extract(EPOCH FROM message.m_creationdate) AS BIGINT), CAST (extract(EPOCH FROM message.m_deletionDate) AS BIGINT), (CASE WHEN m_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), m_messageid, m_ps_imagefile, m_locationip, m_browserused, m_ps_language, m_content, m_length, m_creatorid, m_locationid, m_ps_forumid, m_c_parentpostid,m_c_replyof from message where message.m_deletionDate > message.m_creationdate order by m_creationdate) to '${trill_data_path}/snb1_arbitrary/trill.message.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select  CAST (extract(EPOCH FROM p_creationdate) AS BIGINT), CAST (extract(EPOCH FROM p_deletiondate) AS BIGINT), (CASE WHEN p_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), person.p_personid, person.p_firstname, person.p_lastname, person.p_gender, person.p_birthday, person.p_locationip, person.p_browserused, person.p_placeid, person.p_language, person.p_email from person where p_deletiondate > p_creationdate order by p_creationdate) to '${trill_data_path}/snb1_arbitrary/trill.person.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select  CAST (extract(EPOCH FROM k_creationdate) AS BIGINT), CAST (extract(EPOCH FROM k_deletiondate) AS BIGINT), (CASE WHEN k_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), knows.k_person1id, knows.k_person2id from knows where k_deletiondate > k_creationdate order by k_creationdate) TO '${trill_data_path}/snb1_arbitrary/trill.knows.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select  CAST (extract(EPOCH FROM mt_creationdate) AS BIGINT), CAST (extract(EPOCH FROM mt_deletiondate) AS BIGINT), message_tag.mt_messageid, message_tag.mt_tagid from message_tag where mt_deletiondate > mt_creationdate order by mt_creationdate) TO '${trill_data_path}/snb1_arbitrary/trill.messagetag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select ${tag_timestamp}, t_tagid, t_name, t_url, t_tagclassid from tag) to '${trill_data_path}/snb1_arbitrary/trill.tag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+
+echo "COPY (select CAST (extract(EPOCH FROM message.m_creationdate) AS BIGINT), CAST (extract(EPOCH FROM message.m_deletionDate) AS BIGINT), (CASE WHEN m_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), m_messageid, m_ps_imagefile, m_locationip, m_browserused, m_ps_language, m_content, m_length, m_creatorid, m_locationid, m_ps_forumid, m_c_parentpostid,m_c_replyof from message where message.m_deletionDate > message.m_creationdate order by m_creationdate) to '${trill_data_path}/snb1_window/trill.message.window.csv' DELIMITER '|';" >> pg_tmp.sql
+echo "COPY (select  CAST (extract(EPOCH FROM p_creationdate) AS BIGINT), CAST (extract(EPOCH FROM p_deletiondate) AS BIGINT), (CASE WHEN p_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), person.p_personid, person.p_firstname, person.p_lastname, person.p_gender, person.p_birthday, person.p_locationip, person.p_browserused, person.p_placeid, person.p_language, person.p_email from person where p_deletiondate > p_creationdate order by p_creationdate) to '${trill_data_path}/snb1_window/trill.person.window.csv' DELIMITER '|';" >> pg_tmp.sql
+echo "COPY (select  CAST (extract(EPOCH FROM k_creationdate) AS BIGINT), CAST (extract(EPOCH FROM k_deletiondate) AS BIGINT), (CASE WHEN k_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), knows.k_person1id, knows.k_person2id from knows where k_deletiondate > k_creationdate order by k_creationdate) TO '${trill_data_path}/snb1_window/trill.knows.window.csv' DELIMITER '|';" >> pg_tmp.sql
+echo "COPY (select  CAST (extract(EPOCH FROM mt_creationdate) AS BIGINT), CAST (extract(EPOCH FROM mt_deletiondate) AS BIGINT), message_tag.mt_messageid, message_tag.mt_tagid from message_tag where mt_deletiondate > mt_creationdate order by mt_creationdate) TO '${trill_data_path}/snb1_window/trill.messagetag.window.csv' DELIMITER '|';" >> pg_tmp.sql
+echo "COPY (select ${tag_timestamp}, t_tagid, t_name, t_url, t_tagclassid from tag) to '${trill_data_path}/snb1_window/trill.tag.window.csv' DELIMITER '|';" >> pg_tmp.sql
 
 ${psql_cmd} -p "${PG_PORT}" -U "${PG_USERNAME}" -d "${PG_DATABASE}" -f ./pg_tmp.sql
 
-cp ${trill_data_path}/snb1_arbitrary/* ${trill_data_path}/snb2_arbitrary/
-cp ${trill_data_path}/snb1_arbitrary/* ${trill_data_path}/snb3_arbitrary/
-cp ${trill_data_path}/snb1_arbitrary/* ${trill_data_path}/snb4_arbitrary/
+# cp ${trill_data_path}/snb1_arbitrary/* ${trill_data_path}/snb2_arbitrary/
+# cp ${trill_data_path}/snb1_arbitrary/* ${trill_data_path}/snb3_arbitrary/
+# cp ${trill_data_path}/snb1_arbitrary/* ${trill_data_path}/snb4_arbitrary/
 
-cp ${trill_data_path}/snb1_arbitrary/trill.message.arbitrary.csv ${trill_data_path}/snb1_window/trill.message.window.csv
-cp ${trill_data_path}/snb1_arbitrary/trill.person.arbitrary.csv ${trill_data_path}/snb1_window/trill.person.window.csv
-cp ${trill_data_path}/snb1_arbitrary/trill.knows.arbitrary.csv ${trill_data_path}/snb1_window/trill.knows.window.csv
-cp ${trill_data_path}/snb1_arbitrary/trill.messagetag.arbitrary.csv ${trill_data_path}/snb1_window/trill.messagetag.window.csv
-cp ${trill_data_path}/snb1_arbitrary/trill.tag.arbitrary.csv ${trill_data_path}/snb1_window/trill.tag.window.csv
+# cp ${trill_data_path}/snb1_arbitrary/trill.message.arbitrary.csv ${trill_data_path}/snb1_window/trill.message.window.csv
+# cp ${trill_data_path}/snb1_arbitrary/trill.person.arbitrary.csv ${trill_data_path}/snb1_window/trill.person.window.csv
+# cp ${trill_data_path}/snb1_arbitrary/trill.knows.arbitrary.csv ${trill_data_path}/snb1_window/trill.knows.window.csv
+# cp ${trill_data_path}/snb1_arbitrary/trill.messagetag.arbitrary.csv ${trill_data_path}/snb1_window/trill.messagetag.window.csv
+# cp ${trill_data_path}/snb1_arbitrary/trill.tag.arbitrary.csv ${trill_data_path}/snb1_window/trill.tag.window.csv
 
 cp ${trill_data_path}/snb1_window/* ${trill_data_path}/snb2_window/
 cp ${trill_data_path}/snb1_window/* ${trill_data_path}/snb3_window/
@@ -115,10 +121,10 @@ echo "finish trill snb data"
 
 flink_data_path="${TARGET_PATH}/flink"
 mkdir -p "${flink_data_path}"
-mkdir -p "${flink_data_path}/snb1_arbitrary"
-mkdir -p "${flink_data_path}/snb2_arbitrary"
-mkdir -p "${flink_data_path}/snb3_arbitrary"
-mkdir -p "${flink_data_path}/snb4_arbitrary"
+# mkdir -p "${flink_data_path}/snb1_arbitrary"
+# mkdir -p "${flink_data_path}/snb2_arbitrary"
+# mkdir -p "${flink_data_path}/snb3_arbitrary"
+# mkdir -p "${flink_data_path}/snb4_arbitrary"
 mkdir -p "${flink_data_path}/snb1_window"
 mkdir -p "${flink_data_path}/snb2_window"
 mkdir -p "${flink_data_path}/snb3_window"
@@ -157,39 +163,39 @@ cp ${flink_data_path}/snb1_window/* ${flink_data_path}/snb2_window/
 cp ${flink_data_path}/snb1_window/* ${flink_data_path}/snb3_window/
 cp ${flink_data_path}/snb1_window/* ${flink_data_path}/snb4_window/
 
-# flink arbitrary
-rm -f pg_tmp.sql
-touch pg_tmp.sql
+# # flink arbitrary
+# rm -f pg_tmp.sql
+# touch pg_tmp.sql
 
-echo "COPY (select (CASE WHEN m_op = 1 THEN '+' ELSE '-' END), (CASE WHEN m_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), m_messageid, m_ps_imagefile, m_locationip, m_browserused, m_ps_language, m_content, m_length, m_creatorid, m_locationid, m_ps_forumid, m_c_parentpostid,m_c_replyof from messageT order by m_op_time asc, m_op desc) to '${flink_data_path}/snb1_arbitrary/flink.message.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select (CASE WHEN p_op = 1 THEN '+' ELSE '-' END), (CASE WHEN p_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), p_personid, p_firstname, p_lastname, p_gender, p_birthday, p_locationip, p_browserused, p_placeid, p_language, p_email from personT order by p_op_time asc, p_op desc) to '${flink_data_path}/snb1_arbitrary/flink.person.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select (CASE WHEN k_op = 1 THEN '+' ELSE '-' END), (CASE WHEN k_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), k_personid1, k_personid2 from knowsT order by k_op_time asc, k_op desc) to '${flink_data_path}/snb1_arbitrary/flink.knows.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select (CASE WHEN mt_op = 1 THEN '+' ELSE '-' END), mt_messageid, mt_tagid from message_tagT order by mt_op_time asc, mt_op desc) to '${flink_data_path}/snb1_arbitrary/flink.messagetag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select * from tag) to '${flink_data_path}/snb1_arbitrary/flink.tag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select (CASE WHEN m_op = 1 THEN '+' ELSE '-' END), (CASE WHEN m_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), m_messageid, m_ps_imagefile, m_locationip, m_browserused, m_ps_language, m_content, m_length, m_creatorid, m_locationid, m_ps_forumid, m_c_parentpostid,m_c_replyof from messageT order by m_op_time asc, m_op desc) to '${flink_data_path}/snb1_arbitrary/flink.message.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select (CASE WHEN p_op = 1 THEN '+' ELSE '-' END), (CASE WHEN p_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), p_personid, p_firstname, p_lastname, p_gender, p_birthday, p_locationip, p_browserused, p_placeid, p_language, p_email from personT order by p_op_time asc, p_op desc) to '${flink_data_path}/snb1_arbitrary/flink.person.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select (CASE WHEN k_op = 1 THEN '+' ELSE '-' END), (CASE WHEN k_explicitlyDeleted = TRUE THEN 'true' ELSE 'false' END), k_personid1, k_personid2 from knowsT order by k_op_time asc, k_op desc) to '${flink_data_path}/snb1_arbitrary/flink.knows.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select (CASE WHEN mt_op = 1 THEN '+' ELSE '-' END), mt_messageid, mt_tagid from message_tagT order by mt_op_time asc, mt_op desc) to '${flink_data_path}/snb1_arbitrary/flink.messagetag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select * from tag) to '${flink_data_path}/snb1_arbitrary/flink.tag.arbitrary.csv' DELIMITER '|';" >> pg_tmp.sql
 
-${psql_cmd} -p "${PG_PORT}" -U "${PG_USERNAME}" -d "${PG_DATABASE}" -f ./pg_tmp.sql
+# ${psql_cmd} -p "${PG_PORT}" -U "${PG_USERNAME}" -d "${PG_DATABASE}" -f ./pg_tmp.sql
 
 
-cp ${flink_data_path}/snb1_arbitrary/* ${flink_data_path}/snb2_arbitrary/
-cp ${flink_data_path}/snb1_arbitrary/* ${flink_data_path}/snb3_arbitrary/
-cp ${flink_data_path}/snb1_arbitrary/* ${flink_data_path}/snb4_arbitrary/
+# cp ${flink_data_path}/snb1_arbitrary/* ${flink_data_path}/snb2_arbitrary/
+# cp ${flink_data_path}/snb1_arbitrary/* ${flink_data_path}/snb3_arbitrary/
+# cp ${flink_data_path}/snb1_arbitrary/* ${flink_data_path}/snb4_arbitrary/
 
 echo "finish flink snb data"
 
 # first create raw data for acq(D/F), dbt(spark/cpp)
 raw_window_data_path="${TARGET_PATH}/raw_window"
-raw_arbitrary_data_path="${TARGET_PATH}/raw_arbitrary"
+# raw_arbitrary_data_path="${TARGET_PATH}/raw_arbitrary"
 raw_output_data_path="${TARGET_PATH}/tmp_output"
 mkdir -p "${raw_window_data_path}"
-mkdir -p "${raw_arbitrary_data_path}"
+# mkdir -p "${raw_arbitrary_data_path}"
 mkdir -p "${raw_output_data_path}"
 
 acq_data_path="${TARGET_PATH}/crown"
 mkdir -p "${acq_data_path}"
-mkdir -p "${acq_data_path}/snb1_arbitrary"
-mkdir -p "${acq_data_path}/snb2_arbitrary"
-mkdir -p "${acq_data_path}/snb3_arbitrary"
-mkdir -p "${acq_data_path}/snb4_arbitrary"
+# mkdir -p "${acq_data_path}/snb1_arbitrary"
+# mkdir -p "${acq_data_path}/snb2_arbitrary"
+# mkdir -p "${acq_data_path}/snb3_arbitrary"
+# mkdir -p "${acq_data_path}/snb4_arbitrary"
 mkdir -p "${acq_data_path}/snb1_window"
 mkdir -p "${acq_data_path}/snb2_window"
 mkdir -p "${acq_data_path}/snb3_window"
@@ -197,10 +203,10 @@ mkdir -p "${acq_data_path}/snb4_window"
 
 dbt_data_path="${TARGET_PATH}/dbtoaster"
 mkdir -p "${dbt_data_path}"
-mkdir -p "${dbt_data_path}/snb1_arbitrary"
-mkdir -p "${dbt_data_path}/snb2_arbitrary"
-mkdir -p "${dbt_data_path}/snb3_arbitrary"
-mkdir -p "${dbt_data_path}/snb4_arbitrary"
+# mkdir -p "${dbt_data_path}/snb1_arbitrary"
+# mkdir -p "${dbt_data_path}/snb2_arbitrary"
+# mkdir -p "${dbt_data_path}/snb3_arbitrary"
+# mkdir -p "${dbt_data_path}/snb4_arbitrary"
 mkdir -p "${dbt_data_path}/snb1_window"
 mkdir -p "${dbt_data_path}/snb2_window"
 mkdir -p "${dbt_data_path}/snb3_window"
@@ -208,10 +214,10 @@ mkdir -p "${dbt_data_path}/snb4_window"
 
 dbtcpp_data_path="${TARGET_PATH}/dbtoaster_cpp"
 mkdir -p "${dbtcpp_data_path}"
-mkdir -p "${dbtcpp_data_path}/snb1_arbitrary"
-mkdir -p "${dbtcpp_data_path}/snb2_arbitrary"
-mkdir -p "${dbtcpp_data_path}/snb3_arbitrary"
-mkdir -p "${dbtcpp_data_path}/snb4_arbitrary"
+# mkdir -p "${dbtcpp_data_path}/snb1_arbitrary"
+# mkdir -p "${dbtcpp_data_path}/snb2_arbitrary"
+# mkdir -p "${dbtcpp_data_path}/snb3_arbitrary"
+# mkdir -p "${dbtcpp_data_path}/snb4_arbitrary"
 mkdir -p "${dbtcpp_data_path}/snb1_window"
 mkdir -p "${dbtcpp_data_path}/snb2_window"
 mkdir -p "${dbtcpp_data_path}/snb3_window"
@@ -259,44 +265,44 @@ mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb4_window/"
 mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb4_window/"
 mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb4_window/"
 
-# arbitrary
-rm -f pg_tmp.sql
-touch pg_tmp.sql
+# # arbitrary
+# rm -f pg_tmp.sql
+# touch pg_tmp.sql
 
-echo "COPY (select * from messageT order by m_op_time asc, m_op desc) to '${raw_arbitrary_data_path}/message' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select * from personT order by p_op_time asc, p_op desc) to '${raw_arbitrary_data_path}/person' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select * from knowsT order by k_op_time asc, k_op desc) to '${raw_arbitrary_data_path}/knows' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select * from message_tagT order by mt_op_time asc, mt_op desc) to '${raw_arbitrary_data_path}/messagetag' DELIMITER '|';" >> pg_tmp.sql
-echo "COPY (select ${tag_timestamp}, t_tagid, t_name, t_url, t_tagclassid from tag) to '${raw_arbitrary_data_path}/tag' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select * from messageT order by m_op_time asc, m_op desc) to '${raw_arbitrary_data_path}/message' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select * from personT order by p_op_time asc, p_op desc) to '${raw_arbitrary_data_path}/person' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select * from knowsT order by k_op_time asc, k_op desc) to '${raw_arbitrary_data_path}/knows' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select * from message_tagT order by mt_op_time asc, mt_op desc) to '${raw_arbitrary_data_path}/messagetag' DELIMITER '|';" >> pg_tmp.sql
+# echo "COPY (select ${tag_timestamp}, t_tagid, t_name, t_url, t_tagclassid from tag) to '${raw_arbitrary_data_path}/tag' DELIMITER '|';" >> pg_tmp.sql
 
-${psql_cmd} -p "${PG_PORT}" -U "${PG_USERNAME}" -d "${PG_DATABASE}" -f ./pg_tmp.sql
-cp "${raw_arbitrary_data_path}/knows" "${raw_arbitrary_data_path}/knows1"
-cp "${raw_arbitrary_data_path}/knows" "${raw_arbitrary_data_path}/knows2"
+# ${psql_cmd} -p "${PG_PORT}" -U "${PG_USERNAME}" -d "${PG_DATABASE}" -f ./pg_tmp.sql
+# cp "${raw_arbitrary_data_path}/knows" "${raw_arbitrary_data_path}/knows1"
+# cp "${raw_arbitrary_data_path}/knows" "${raw_arbitrary_data_path}/knows2"
 
-# snb1
-scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows,message,person" "180" "100" "${raw_output_data_path}" "arbitrary"
-mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb1_arbitrary/"
-mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb1_arbitrary/"
-mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb1_arbitrary/"
-mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb1_arbitrary/"
+# # snb1
+# scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows,message,person" "180" "100" "${raw_output_data_path}" "arbitrary"
+# mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb1_arbitrary/"
+# mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb1_arbitrary/"
+# mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb1_arbitrary/"
+# mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb1_arbitrary/"
 
-# snb2
-scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows1,knows2,message,messagetag,tag" "180" "100" "${raw_output_data_path}" "arbitrary"
-mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb2_arbitrary/"
-mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb2_arbitrary/"
-mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb2_arbitrary/"
-mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb2_arbitrary/"
+# # snb2
+# scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows1,knows2,message,messagetag,tag" "180" "100" "${raw_output_data_path}" "arbitrary"
+# mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb2_arbitrary/"
+# mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb2_arbitrary/"
+# mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb2_arbitrary/"
+# mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb2_arbitrary/"
 
-# snb3
-scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows1,knows2,message,person" "180" "100" "${raw_output_data_path}" "arbitrary"
-mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb3_arbitrary/"
-mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb3_arbitrary/"
-mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb3_arbitrary/"
-mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb3_arbitrary/"
+# # snb3
+# scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows1,knows2,message,person" "180" "100" "${raw_output_data_path}" "arbitrary"
+# mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb3_arbitrary/"
+# mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb3_arbitrary/"
+# mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb3_arbitrary/"
+# mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb3_arbitrary/"
 
-# snb4
-scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows,message,messagetag,tag" "180" "100" "${raw_output_data_path}" "arbitrary"
-mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb4_arbitrary/"
-mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb4_arbitrary/"
-mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb4_arbitrary/"
-mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb4_arbitrary/"
+# # snb4
+# scala ./SnbDataConvertor.scala "${raw_arbitrary_data_path}" "knows,message,messagetag,tag" "180" "100" "${raw_output_data_path}" "arbitrary"
+# mv ${raw_output_data_path}/dbtoaster_cpp* "${dbtcpp_data_path}/snb4_arbitrary/"
+# mv ${raw_output_data_path}/dbtoaster* "${dbt_data_path}/snb4_arbitrary/"
+# mv ${raw_output_data_path}/enum* "${dbt_data_path}/snb4_arbitrary/"
+# mv ${raw_output_data_path}/data.csv "${acq_data_path}/snb4_arbitrary/"
