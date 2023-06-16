@@ -43,7 +43,7 @@ namespace Length4_latency
                 outputs.Add(new LinkedList<Tuple<bool, Path, long>>());
             }
 
-            var stream1 = CsvFileReader<Row, Edge>.GetStartOrEndStreamable(path + "/data.csv", punctuationTime,
+            var stream1 = CsvFileReader<Row, Edge>.GetLatencyStreamable(path + "/data.csv", punctuationTime,
                 line => { 
                     var strs = line.Split(",");
                     return new Row(int.Parse(strs[0]), int.Parse(strs[1]), int.Parse(strs[2]), int.Parse(strs[3]));
@@ -52,7 +52,7 @@ namespace Length4_latency
                 row => row.time1,
                 row => row.time2, insert1, delete1);
 
-            var stream2 = CsvFileReader<Row, Edge>.GetStartOrEndStreamable(path + "/data.csv", punctuationTime,
+            var stream2 = CsvFileReader<Row, Edge>.GetLatencyStreamable(path + "/data.csv", punctuationTime,
                 line => { 
                     var strs = line.Split(",");
                     return new Row(int.Parse(strs[0]), int.Parse(strs[1]), int.Parse(strs[2]), int.Parse(strs[3]));
@@ -61,7 +61,7 @@ namespace Length4_latency
                 row => row.time1,
                 row => row.time2, insert2, delete2);
 
-            var stream3 = CsvFileReader<Row, Edge>.GetStartOrEndStreamable(path + "/data.csv", punctuationTime,
+            var stream3 = CsvFileReader<Row, Edge>.GetLatencyStreamable(path + "/data.csv", punctuationTime,
                 line => { 
                     var strs = line.Split(",");
                     return new Row(int.Parse(strs[0]), int.Parse(strs[1]), int.Parse(strs[2]), int.Parse(strs[3]));
@@ -70,7 +70,7 @@ namespace Length4_latency
                 row => row.time1,
                 row => row.time2, insert3, delete3);
 
-            var stream4 = CsvFileReader<Row, Edge>.GetStartOrEndStreamable(path + "/data.csv", punctuationTime,
+            var stream4 = CsvFileReader<Row, Edge>.GetLatencyStreamable(path + "/data.csv", punctuationTime,
                 line => { 
                     var strs = line.Split(",");
                     return new Row(int.Parse(strs[0]), int.Parse(strs[1]), int.Parse(strs[2]), int.Parse(strs[3]));

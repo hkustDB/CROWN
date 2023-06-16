@@ -30,6 +30,12 @@ namespace Csv {
                 .ToStreamable(null, FlushPolicy.FlushOnPunctuation, PeriodicPunctuationPolicy.Time(punctuationTime));
         }
 
+        public static IStreamable<Empty, P> GetLatencyStreamable(string path, ulong punctuationTime, Func<string, R> lineToRow, Func<R, P> rowToPayload,
+                Func<R, long> extractStartOrEnd, Func<R, long> extractPoint, List<Tuple<Edge, long>> insert, List<Tuple<Edge, long>> delete) {
+            return new CsvObservable(path, lineToRow, rowToPayload, InputEventType.StartOrEnd, extractStartOrEnd, extractPoint)
+                .ToStreamable(null, FlushPolicy.FlushOnPunctuation, PeriodicPunctuationPolicy.Time(punctuationTime));
+        }
+
         private sealed class CsvObservable : IObservable<StreamEvent<P>> {
             private string path;
             private Func<string, R> lineToRow;
@@ -37,15 +43,20 @@ namespace Csv {
             private InputEventType eventType;
             private Func<R, long> extractTime1;
             private Func<R, long> extractTime2;
+            private List<Tuple<Edge, long>> insertList;
+            private List<Tuple<Edge, long>> deleteList;
 
             public CsvObservable(string path, Func<string, R> lineToRow, Func<R, P> rowToPayload, 
-                InputEventType eventType, Func<R, long> extractTime1, Func<R, long> extractTime2) {
+                InputEventType eventType, Func<R, long> extractTime1, Func<R, long> extractTime2,
+                List<Tuple<Edge, long>> insertList, List<Tuple<Edge, long>> deleteList) {
                 this.path = path;
                 this.lineToRow = lineToRow;
                 this.rowToPayload = rowToPayload;
                 this.eventType = eventType;
                 this.extractTime1 = extractTime1;
                 this.extractTime2 = extractTime2;
+                this.insertList = insertList;
+                this.deleteList = deleteList;
             }
 
             public IDisposable Subscribe(IObserver<StreamEvent<P>> observer) {

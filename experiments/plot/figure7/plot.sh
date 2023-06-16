@@ -21,14 +21,13 @@ function load {
 }
 
 function append {
-    f1=$1
     f2=$2
     f3=$3
     f4=$4
     f5=$5
     target_file=$6
 
-    v1=$(load "${f1}")
+    v1=$1
     v2=$(load "${f2}")
     v3=$(load "${f3}")
     v4=$(load "${f4}")

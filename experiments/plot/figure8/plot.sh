@@ -21,14 +21,13 @@ function load {
 }
 
 function append {
-    f1=$1
     f2=$2
     f3=$3
     f4=$4
     f5=$5
     target_file=$6
 
-    v1=$(load "${f1}")
+    v1=$1
     v2=$(load "${f2}")
     v3=$(load "${f3}")
     v4=$(load "${f4}")
@@ -47,10 +46,10 @@ touch "${target_file}"
 result_path_q1="${ROOT_PATH}/log/result/parallelism"
 append "1" "${result_path_q1}/task1.txt" "${result_path_q1}/task7.txt" "${result_path_q1}/task13.txt" "${result_path_q1}/task19.txt" "${target_file}"
 append "2" "${result_path_q1}/task2.txt" "${result_path_q1}/task8.txt" "${result_path_q1}/task14.txt" "${result_path_q1}/task20.txt" "${target_file}"
-append "4" "${result_path_q1}/task3.txt" "${result_path_q1}/task9.txt" "${result_path_q1}/task15.txt" "${result_path_q1}/task21.txt" "${target_file}"
-append "8" "${result_path_q1}/task4.txt" "${result_path_q1}/task10.txt" "${result_path_q1}/task16.txt" "${result_path_q1}/task22.txt" "${target_file}"
-append "16" "${result_path_q1}/task5.txt" "${result_path_q1}/task11.txt" "${result_path_q1}/task17.txt" "${result_path_q1}/task23.txt" "${target_file}"
-append "32" "${result_path_q1}/task6.txt" "${result_path_q1}/task12.txt" "${result_path_q1}/task18.txt" "${result_path_q1}/task24.txt" "${target_file}"
+append "3" "${result_path_q1}/task3.txt" "${result_path_q1}/task9.txt" "${result_path_q1}/task15.txt" "${result_path_q1}/task21.txt" "${target_file}"
+append "4" "${result_path_q1}/task4.txt" "${result_path_q1}/task10.txt" "${result_path_q1}/task16.txt" "${result_path_q1}/task22.txt" "${target_file}"
+append "5" "${result_path_q1}/task5.txt" "${result_path_q1}/task11.txt" "${result_path_q1}/task17.txt" "${result_path_q1}/task23.txt" "${target_file}"
+append "6" "${result_path_q1}/task6.txt" "${result_path_q1}/task12.txt" "${result_path_q1}/task18.txt" "${result_path_q1}/task24.txt" "${target_file}"
 
 cd "${ROOT_PATH}"
 mkdir -p "log/figure"
