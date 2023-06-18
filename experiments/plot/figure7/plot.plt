@@ -11,9 +11,9 @@ set logscale y
 set xlabel "enclosureness"
 set ylabel "Processing Time (Sec)"
 set xrange [1:20]
-set yrange [10:10000]
+set yrange [1:10000]
 set xtics ("1" 1, "2" 2, "4" 4, "10" 10, "20" 20)
-set ytics ("1e+01" 10, "1e+02" 100, "1e+03" 1000, "1e+04" 10000)
+set ytics ("1e+00" 1, "1e+01" 10, "1e+02" 100, "1e+03" 1000, "1e+04" 10000)
 set key above
 set grid lt 0 lc 0 lw 1
 set border lw 2

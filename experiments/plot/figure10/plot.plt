@@ -15,9 +15,9 @@ set style line 6 pt 3 lc 'orange' ps 2 lw 2
 set logscale y
 set ylabel "Processing Time (Sec)"
 set xrange [-1:12]
-set yrange [0.1:100000]
+set yrange [1:100000]
 set xtics ("3-Hop" 0, "4-Hop" 1, "2-Comb" 2, "SNB Q1" 3, "SNB Q2" 4, "SNB Q3" 5, "dumbbell" 6, "3-Hop" 7, "4-Hop" 8, "dumbbell" 9, "Star" 10, "SNB Q4" 11)
-set ytics ("1e-01" 0.1, "1e+00" 1, "1e+01" 10, "1e+02" 100, "1e+03" 1000, "1e+04" 10000, "1e+05" 100000)
+set ytics ("1e+00" 1, "1e+01" 10, "1e+02" 100, "1e+03" 1000, "1e+04" 10000, "1e+05" 100000)
 set key above
 set grid lt 0 lc 0 lw 1
 set border lw 2
