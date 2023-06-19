@@ -38,7 +38,8 @@ function execute_task {
         rm -f ${execution_time_log}
         touch ${execution_time_log}
         enum_points_list=$(cat "${SCRIPT_PATH}/dbtoaster/${experiment}/enum-points-perf.txt")
-        timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -jar "${SCRIPT_PATH}/dbtoaster/target/experiments-dbtoaster.jar" ${experiment} ${execution_time_log} -b$(prop 'batch.size.num') -d$(prop "task${current_task}.dataset.name") --cfg-file /spark.config.${experiment}.perf "-ep${enum_points_list}" --no-output >> ${execute_log} 2>&1    
+        timeout_time=$(prop 'common.experiment.timeout')
+        timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -jar "${SCRIPT_PATH}/dbtoaster/target/experiments-dbtoaster.jar" ${experiment} ${execution_time_log} -b$(prop 'batch.size.num') -d$(prop "task${current_task}.dataset.name") --cfg-file /spark.config.${experiment}.perf "-ep${enum_points_list}" --no-output >> ${execute_log} 2>&1    
 
         extracted_time=$(grep "Execution Time:" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $3}')
         if [[ -n ${extracted_time} ]]; then
@@ -46,11 +47,13 @@ function execute_task {
         fi
 
     elif [[ "${system}" == "dbtoaster_cpp" ]]; then
+        CONFIG_FILES=("${SCRIPT_PATH}/experiment.cfg")
         execute_log="${SCRIPT_PATH}/dbtoaster_cpp/log/execute-${experiment}.log"
         mkdir -p "${SCRIPT_PATH}/dbtoaster_cpp/log"
         rm -f ${execute_log}
         touch ${execute_log}
-        timeout -s SIGKILL 14400s taskset -c "8" "${SCRIPT_PATH}/dbtoaster_cpp/${experiment}/query.exe" -r 1 >> ${execute_log} 2>&1
+        timeout_time=$(prop 'common.experiment.timeout')
+        timeout -s SIGKILL "${timeout_time}" taskset -c "8" "${SCRIPT_PATH}/dbtoaster_cpp/${experiment}/query.exe" -r 1 >> ${execute_log} 2>&1
 
         extracted_time=$(tail "${SCRIPT_PATH}/dbtoaster_cpp/log/execute-${experiment}.log" | grep "Execution time" | awk '{print $9}')
         if [[ -n ${extracted_time} ]]; then
@@ -59,12 +62,14 @@ function execute_task {
         fi
         
     elif [[ "${system}" == "flink" ]]; then
+        CONFIG_FILES=("${SCRIPT_PATH}/experiment.cfg")
         execute_log="${SCRIPT_PATH}/flink/log/execute-${experiment}.log"
         mkdir -p "${SCRIPT_PATH}/flink/log"
         rm -f ${execute_log}
         touch ${execute_log}
         touch "${SCRIPT_PATH}/flink/log/execution-time.log"
-        timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/flink/log/execution-time.log -jar "${SCRIPT_PATH}/flink/target/experiments-flink-jar-with-dependencies.jar" "${experiment}" >> ${execute_log} 2>&1
+        timeout_time=$(prop 'common.experiment.timeout')
+        timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/flink/log/execution-time.log -jar "${SCRIPT_PATH}/flink/target/experiments-flink-jar-with-dependencies.jar" "${experiment}" >> ${execute_log} 2>&1
 
         startime=$(cat "${SCRIPT_PATH}/flink/log/execution-time.log" | awk '/Job .* (.*) switched from state CREATED to RUNNING./{print $1; exit}')
         if [[ -n ${startime} ]]; then
@@ -92,7 +97,8 @@ function execute_task {
         touch ${execution_time_log}
         cd "${SCRIPT_PATH}/trill"
         with_output=$(prop 'write.result.to.file' 'false')
-        timeout -s SIGKILL 14400s taskset -c "8" dotnet "${SCRIPT_PATH}/trill/bin/Debug/net5.0/experiments-trill.dll" "${experiment}" "${execution_time_log}" $(prop 'periodic.punctuation.policy.time') $(prop "task${current_task}.graph.inputsize") $(prop "task${current_task}.filter.condition.value" '-1') "withOutput=${with_output}" >> ${execute_log} 2>&1
+        timeout_time=$(prop 'common.experiment.timeout')
+        timeout -s SIGKILL "${timeout_time}" taskset -c "8" dotnet "${SCRIPT_PATH}/trill/bin/Debug/net5.0/experiments-trill.dll" "${experiment}" "${execution_time_log}" $(prop 'periodic.punctuation.policy.time') $(prop "task${current_task}.graph.inputsize") $(prop "task${current_task}.filter.condition.value" '-1') "withOutput=${with_output}" >> ${execute_log} 2>&1
         cd ${SCRIPT_PATH}
 
         extracted_time=$(echo $(cat "${SCRIPT_PATH}/trill/log/execution-time.log"))
@@ -112,6 +118,7 @@ function execute_task {
         delta_enable='false'
         full_enable='true'
         filter_value=$(prop "task${current_task}.filter.condition.value" '-1')
+        timeout_time=$(prop 'common.experiment.timeout')
         cd "${crown_home}"
         if [[ ${crown_mode} = 'minicluster' ]]; then
             crown_class_name=$(prop "task${current_task}.minicluster.entry.class")
@@ -119,9 +126,9 @@ function execute_task {
             input_file_name=$(basename "${input_file}")
             parallelism=$(prop 'crown.minicluster.parallelism')
             if [[ ${filter_value} -ge 0 ]]; then
-                timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
+                timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
             else
-                timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
+                timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
             fi
             
             # run in MiniCluster, extract time from log
@@ -133,7 +140,7 @@ function execute_task {
 
         else
             crown_test_name=$(prop "task${current_task}.test.entry.class")
-            timeout -s SIGKILL 14400s mvn "test" "-Dsuites=${crown_test_name}" "-Dconfig=srcFile=${input_file},deltaEnumEnable=${delta_enable},fullEnumEnable=${full_enable}" >> ${execute_log} 2>&1
+            timeout -s SIGKILL "${timeout_time}" mvn "test" "-Dsuites=${crown_test_name}" "-Dconfig=srcFile=${input_file},deltaEnumEnable=${delta_enable},fullEnumEnable=${full_enable}" >> ${execute_log} 2>&1
             
             # run in ScalaTest, extract time from test report
             report_path="${crown_home}/target/surefire-reports/TestSuite.txt"
@@ -156,6 +163,7 @@ function execute_task {
         delta_enable='true'
         full_enable='false'
         filter_value=$(prop "task${current_task}.filter.condition.value" '-1')
+        timeout_time=$(prop 'common.experiment.timeout')
         cd "${crown_home}"
         if [[ ${crown_mode} = 'minicluster' ]]; then
             crown_class_name=$(prop "task${current_task}.minicluster.entry.class")
@@ -163,9 +171,9 @@ function execute_task {
             input_file_name=$(basename "${input_file}")
             parallelism=$(prop 'crown.minicluster.parallelism')
             if [[ ${filter_value} -ge 0 ]]; then
-                timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
+                timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
             else
-                timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
+                timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
             fi
 
             # run in MiniCluster, extract time from log
@@ -176,7 +184,7 @@ function execute_task {
             fi
         else
             crown_test_name=$(prop "task${current_task}.test.entry.class")
-            timeout -s SIGKILL 14400s mvn "test" "-Dsuites=${crown_test_name}" "-Dconfig=srcFile=${input_file},deltaEnumEnable=${delta_enable},fullEnumEnable=${full_enable}" >> ${execute_log} 2>&1
+            timeout -s SIGKILL "${timeout_time}" mvn "test" "-Dsuites=${crown_test_name}" "-Dconfig=srcFile=${input_file},deltaEnumEnable=${delta_enable},fullEnumEnable=${full_enable}" >> ${execute_log} 2>&1
 
             # run in ScalaTest, extract time from test report
             extracted_time=$(grep "+ Execution time" ${report_path} | awk '{print $4}')

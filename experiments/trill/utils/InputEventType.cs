@@ -1,3 +1,3 @@
 enum InputEventType { 
-    Start, Interval, Point, StartOrEnd
+    Start, Interval, Point, StartOrEnd, Latency
 };

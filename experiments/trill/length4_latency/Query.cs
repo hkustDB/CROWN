@@ -88,12 +88,12 @@ namespace Length4_latency
             if (outputMode == 0) {
                 length4.ToStreamEventObservable().ForEachAsync(ev => {
                     if (ev.IsData) {
-                        cnt += 1;
                         index = (cnt / 2000000);
                         if (ev.IsStart)
                             outputs[index].AddLast(new Tuple<bool, Path, long>(true, ev.Payload, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
                         else if (ev.IsEnd)
                             outputs[index].AddLast(new Tuple<bool, Path, long>(false, ev.Payload, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+                        cnt += 1;
                     }
                 }).Wait();
 
@@ -108,10 +108,10 @@ namespace Length4_latency
                 var deleteMap2 = build(delete2);
                 var deleteMap3 = build(delete3);
                 var deleteMap4 = build(delete4);
-
-                for (int i = 0; i < 30; i++) {
-                    long totalLatency = 0L;
-                    long outputCnt = 0;
+                
+                long totalLatency = 0L;
+                long outputCnt = 0;
+                for (int i = 0; i < 30; i++) {    
                     foreach (var item in outputs[i]) {
                         var isInsert = item.Item1;
                         var p = item.Item2;

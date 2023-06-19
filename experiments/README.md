@@ -135,10 +135,39 @@ Set the following configuration items to the correct values before running. Make
 ```
 
 #### 5.Run experiments
+#### Quick result
+Typically, the experiments take several days to run. You can configure the value of `common.experiment.timeout` in the `experiment.cfg`, which is used to control the maximum timeout for each task. We strongly recommend that you use the default configuration which is 14400s,  Reducing `common.experiment.timeout` can drastically reduce the time needed to run all experiments, but it may also cause the lack of data for some time-consuming tasks in the resulting figure.
 
+#### Spec files
+There are some `*.spec` files under the folder `experiments/specs/`. They correspond to the experiments in the paper. For example, the `experiments/specs/parallelism.spec` corresponds to the parallel experiment of Figure 8 in the paper, the `experiments/specs/enclosureness.spec` corresponds to the Figure 7 in the paper, and the other three spec files correspond to the Figure 10 in the paper. Each spec file is composed of several tasks, and each task corresponds to a data point or histogram bar in the figure. For example, the `task1` in the `full_join_queries.spec` measures the execution time of CROWN under the `3-Hop (length3_filter)` experiment; the `task3` in the `parallelism.spec` measures the execution time of CROWN in the experiment of `4-Hop (length4_filter)` under configuration `parallelism = 4`.
+
+#### Execute script
+Use the `experiments/run_all.sh` script to execute all experiments.
+```shell
+    # This script will run all the experiment for Figure 7-10. 
+    bash run_all.sh
+    
+    # If you want to run Figure 7-10 experiments separately, you can do like this:
+    # bash build_all.sh, you should run this script first to build executable environment
+    # then you can use run_fig7.sh to run fig7 experiments
+    # or use run_fig8.sh to run fig8 experiments
+    # or use run_fig9.sh to run fig8 experiments
+    # or use execute_all.sh to run fig10 experiments
+```
+
+#### Result
+Each spec file has a `spec.query.name` configuration. All the execution results are stored at the path `experiments/log/result/{spec.query.name}/{task_name}.txt`. The result of the aforementioned `task3` in `parallelism.spec` will be stored at `experiments/log/result/parallelism/task3.txt`. The script will write a '-1' in the result file for those failed or timed out executions.
 
 #### 6.Plotting
-
+You can use the `experiments/plot.sh` script to plot all the figures at once.
+```shell
+    # This script will plot the experiment results(Figure 7-10).
+    # For Fig 7, the output path is experiments/log/figure/figure7.png
+    # For Fig 8, the output path is experiments/log/figure/figure8.png
+    # For Fig 9, the output path is experiments/log/figure/figure9.png
+    # For Fig 10, the output path is experiments/log/figure/figure10.png
+    bash plot.sh
+```
 
 ### Project Main Structure
 ```

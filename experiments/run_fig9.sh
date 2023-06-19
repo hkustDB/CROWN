@@ -14,6 +14,12 @@ rm -f ${log_file}
 touch ${log_file}
 chmod -f g=u ${log_file}
 
+spec_result_path="${SCRIPT_PATH}/log/result/latency"
+mkdir -p "${spec_result_path}"
+task_result_file="${spec_result_path}/fig9_result.txt"
+rm -f ${task_result_file}
+touch ${task_result_file}
+
 CONFIG_FILES=("${SCRIPT_PATH}/experiment.cfg")
 log_file_temp="${SCRIPT_PATH}/data/log/produce-data-length4_latency.log"
 mkdir -p "${SCRIPT_PATH}/data/log"
@@ -107,14 +113,13 @@ rm -f ${execution_time_log}
 touch ${execution_time_log}
 cd "${SCRIPT_PATH}/trill"
 with_output=$(prop 'write.result.to.file' 'false')
-timeout -s SIGKILL 14400s taskset -c "8" dotnet "${SCRIPT_PATH}/trill/bin/Debug/net5.0/experiments-trill.dll" "length4_latency" "${execution_time_log}" $(prop 'periodic.punctuation.policy.time') $(prop 'graph.input.size') $(prop 'filter.condition.value' '-1') "withOutput=${with_output}" >> ${execute_log} 2>&1
+timeout_time=$(prop 'common.experiment.timeout')
+timeout -s SIGKILL "${timeout_time}" taskset -c "8" dotnet "${SCRIPT_PATH}/trill/bin/Debug/net5.0/experiments-trill.dll" "length4_latency" "${execution_time_log}" $(prop 'periodic.punctuation.policy.time') $(prop 'graph.input.size') $(prop 'filter.condition.value' '-1') "withOutput=${with_output}" >> ${execute_log} 2>&1
 cd ${SCRIPT_PATH}
 
-# TBD
-# extracted_time=$(echo $(cat "${SCRIPT_PATH}/trill/log/execution-time.log"))
-# if [[ -n ${extracted_time} ]]; then
-#     execution_time=${extracted_time}
-# fi
+avg_latancy=$(grep "avg latancy =" "${SCRIPT_PATH}/trill/log/execute-length4_latency.log" | awk '{print $4}')
+echo ${avg_latancy} >> ${task_result_file}
+
 
 CONFIG_FILES=("${SCRIPT_PATH}/crown/length4_latency/common.cfg" "${SCRIPT_PATH}/crown/length4_latency/perf.cfg" "${SCRIPT_PATH}/experiment.cfg")
 mkdir -p "${SCRIPT_PATH}/crown/log"
@@ -127,6 +132,7 @@ input_file=$(prop 'path.to.data.csv')
 delta_enable='true'
 full_enable='false'
 filter_value=$(prop 'filter.condition.value' '-1')
+timeout_time=$(prop 'common.experiment.timeout')
 cd "${crown_home}"
 if [[ ${crown_mode} = 'minicluster' ]]; then
     crown_class_name=$(prop 'minicluster.entry.class')
@@ -134,9 +140,9 @@ if [[ ${crown_mode} = 'minicluster' ]]; then
     input_file_name=$(basename "${input_file}")
     parallelism=$(prop 'crown.minicluster.parallelism')
     if [[ ${filter_value} -ge 0 ]]; then
-        timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
+        timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
     else
-        timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
+        timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
     fi
 
     # TBD

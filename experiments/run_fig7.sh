@@ -68,6 +68,7 @@ function run_task_fig7 {
     delta_enable=$(prop 'crown.delta.enum.enable' 'false')
     full_enable=$(prop 'crown.full.enum.enable' 'true')
     filter_value=$(prop "task${current_task}.filter.condition.value" '-1')
+    timeout_time=$(prop 'common.experiment.timeout')
     cd "${crown_home}"
     if [[ ${crown_mode} = 'minicluster' ]]; then
         crown_class_name=$(prop "task${current_task}.minicluster.entry.class")
@@ -75,9 +76,9 @@ function run_task_fig7 {
         input_file_name=$(basename "${input_file}")
         parallelism=$(prop 'crown.minicluster.parallelism')
         if [[ ${filter_value} -ge 0 ]]; then
-            timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
+            timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
         else
-            timeout -s SIGKILL 14400s taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
+            timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
         fi
         extracted_time=$(grep "StartTime" "${execute_log}" | grep "EndTime" | grep "AccumulateTime" | awk '{print $13}' | sort -n | tail -n1)
         if [[ -n ${extracted_time} ]]; then

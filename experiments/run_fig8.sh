@@ -47,7 +47,8 @@ function execute_task_fig8 {
         rm -f ${execution_time_log}
         touch ${execution_time_log}
         enum_points_list=$(cat "${SCRIPT_PATH}/dbtoaster/${experiment}/enum-points-perf.txt")
-        timeout -s SIGKILL 14400s taskset -c "${executor_cores}" java -Xms500g -Xmx500g -jar "${SCRIPT_PATH}/dbtoaster/target/experiments-dbtoaster.jar" ${experiment} ${execution_time_log} -b$(prop 'batch.size.num') -d$(prop "task${current_task}.dataset.name") --cfg-file /spark.config.${experiment}.perf "-ep${enum_points_list}" --no-output >> ${execute_log} 2>&1    
+        timeout_time=$(prop 'common.experiment.timeout')
+        timeout -s SIGKILL "${timeout_time}" taskset -c "${executor_cores}" java -Xms500g -Xmx500g -jar "${SCRIPT_PATH}/dbtoaster/target/experiments-dbtoaster.jar" ${experiment} ${execution_time_log} -b$(prop 'batch.size.num') -d$(prop "task${current_task}.dataset.name") --cfg-file /spark.config.${experiment}.perf "-ep${enum_points_list}" --no-output >> ${execute_log} 2>&1    
 
         extracted_time=$(grep "Execution Time:" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $3}')
         if [[ -n ${extracted_time} ]]; then
@@ -100,7 +101,8 @@ function execute_task_fig8 {
         rm -f ${execute_log}
         touch ${execute_log}
         touch "${SCRIPT_PATH}/flink/log/execution-time.log"
-        timeout -s SIGKILL 14400s taskset -c "${executor_cores}" java -Xms500g -Xmx500g -DexecutionTimeLogPath=${SCRIPT_PATH}/flink/log/execution-time.log -jar "${SCRIPT_PATH}/flink/target/experiments-flink-jar-with-dependencies.jar" "${experiment}" >> ${execute_log} 2>&1
+        timeout_time=$(prop 'common.experiment.timeout')
+        timeout -s SIGKILL "${timeout_time}" taskset -c "${executor_cores}" java -Xms500g -Xmx500g -DexecutionTimeLogPath=${SCRIPT_PATH}/flink/log/execution-time.log -jar "${SCRIPT_PATH}/flink/target/experiments-flink-jar-with-dependencies.jar" "${experiment}" >> ${execute_log} 2>&1
 
         startime=$(cat "${SCRIPT_PATH}/flink/log/execution-time.log" | awk '/Job .* (.*) switched from state CREATED to RUNNING./{print $1; exit}')
         if [[ -n ${startime} ]]; then
@@ -129,6 +131,7 @@ function execute_task_fig8 {
         delta_enable='false'
         full_enable='true'
         filter_value=$(prop "task${current_task}.filter.condition.value" '-1')
+        timeout_time=$(prop 'common.experiment.timeout')
         cd "${crown_home}"
         if [[ ${crown_mode} = 'minicluster' ]]; then
             crown_class_name=$(prop "task${current_task}.minicluster.entry.class")
@@ -136,9 +139,9 @@ function execute_task_fig8 {
             input_file_name=$(basename "${input_file}")
             parallelism=$(prop "task${current_task}.minicluster.parallelism")
             if [[ ${filter_value} -ge 0 ]]; then
-                timeout -s SIGKILL 14400s taskset -c "${executor_cores}" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
+                timeout -s SIGKILL "${timeout_time}" taskset -c "${executor_cores}" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" "--n" "${filter_value}" >> ${execute_log} 2>&1
             else
-                timeout -s SIGKILL 14400s taskset -c "${executor_cores}" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
+                timeout -s SIGKILL "${timeout_time}" taskset -c "${executor_cores}" java -Xms128g -Xmx128g -DexecutionTimeLogPath=${SCRIPT_PATH}/crown/log/execution-time.log -cp "target/CROWN-1.0-SNAPSHOT.jar" ${crown_class_name} "--path" "${input_path}" "--graph" "${input_file_name}" "--parallelism" "${parallelism}" "--deltaEnumEnable" "${delta_enable}" "--fullEnumEnable" "${full_enable}" >> ${execute_log} 2>&1
             fi
             # run in MiniCluster, extract time from log
             extracted_time=$(grep "StartTime" "${execute_log}" | grep "EndTime" | grep "AccumulateTime" | awk '{print $13}' | sort -n | tail -n1)

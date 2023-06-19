@@ -34,7 +34,7 @@ namespace Csv {
 
         public static IStreamable<Empty, P> GetLatencyStreamable(string path, ulong punctuationTime, Func<string, R> lineToRow, Func<R, P> rowToPayload,
                 Func<R, long> extractStartOrEnd, Func<R, long> extractPoint, List<Tuple<P, long>> insert, List<Tuple<P, long>> delete) {
-            return new CsvObservable(path, lineToRow, rowToPayload, InputEventType.StartOrEnd, extractStartOrEnd, extractPoint, insert, delete)
+            return new CsvObservable(path, lineToRow, rowToPayload, InputEventType.Latency, extractStartOrEnd, extractPoint, insert, delete)
                 .ToStreamable(null, FlushPolicy.FlushOnPunctuation, PeriodicPunctuationPolicy.Time(punctuationTime));
         }
 
@@ -103,12 +103,6 @@ namespace Csv {
                     foreach (string line in File.ReadLines(path)) { 
                         R row = lineToRow(line);
                         P payload = rowToPayload(row);
-                        
-                        //insert
-                        if (extractTime2(row) == 0)
-                            insertList.Add(new Tuple<P, long>(payload, extractTime1(row)));
-                        else
-                            deleteList.Add(new Tuple<P, long>(payload, extractTime1(row)));
 
                         switch (eventType) {
                             case InputEventType.Start: {
@@ -129,6 +123,20 @@ namespace Csv {
                                     this.observer.OnNext(StreamEvent.CreateStart(extractTime1(row), payload));
                                 else
                                     this.observer.OnNext(StreamEvent.CreateEnd(extractTime1(row), extractTime2(row), payload));
+                                break;
+                            }
+                            case InputEventType.Latency: {
+                                bool isStart = (extractTime2(row) == 0);
+                                if (isStart) {
+                                    //insertList.Add(new Tuple<P, long>(payload, extractTime1(row)));
+                                    this.observer.OnNext(StreamEvent.CreateStart(extractTime1(row), payload));
+                                    insertList.Add(new Tuple<P, long>(payload, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+                                }
+                                else {
+                                    //deleteList.Add(new Tuple<P, long>(payload, extractTime1(row)));
+                                    this.observer.OnNext(StreamEvent.CreateEnd(extractTime1(row), extractTime2(row), payload));
+                                    deleteList.Add(new Tuple<P, long>(payload, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+                                }
                                 break;
                             }
                         }
