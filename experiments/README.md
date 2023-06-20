@@ -14,6 +14,7 @@ The following commands or tools need to be installed in advance.
 * psql - postgresql-10.23
 * pyenv - pyenv-2.3.18
 * pyenv virtualenv - pyenv-virtualenv 1.2.1
+* gnuplot - gnuplot 5.4
 
 ### Hareware Requirements
 Recommended:
@@ -47,7 +48,7 @@ Please make sure your current working directory is the same directory as this RE
     curl -O https://archive.apache.org/dist/spark/spark-3.2.2/spark-3.2.2-bin-hadoop3.2.tgz
     # 3. extract the package  
     tar -zxvf spark-3.2.2-bin-hadoop3.2.tgz
-    # 4. set environment variables, you should modify it to your own path.
+    # 4. set environment variables, you should modify it to your own path. You better add it to your ~/.bash_profile.
     export SPARK_HOME="/path/to/spark-3.2.2-bin-hadoop3.2"
     export PATH="${SPARK_HOME}/bin":"${PATH}"
 ```
