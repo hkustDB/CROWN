@@ -111,7 +111,7 @@ namespace Length4_latency
                 
                 long totalLatency = 0L;
                 long outputCnt = 0;
-                for (int i = 0; i < 30; i++) {    
+                for (int i = 0; i < 29; i++) {    
                     foreach (var item in outputs[i]) {
                         var isInsert = item.Item1;
                         var p = item.Item2;

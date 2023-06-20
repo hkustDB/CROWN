@@ -10,6 +10,7 @@ import org.apache.flink.streaming.api.functions.sink.DiscardingSink
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.util.Collector
+import org.apache.flink.core.fs.FileSystem.WriteMode
 
 object L4TimeDistributedJob {
 
@@ -44,9 +45,10 @@ object L4TimeDistributedJob {
     val inputStream : DataStream[Payload] = getStream(env,inputpath,fullEnumEnable)
     val graphStream : DataStream[Payload] = inputStream.getSideOutput(graphTag)
 
-    val deltaEnumMode = if (deltaEnumEnable) 0 /* enum and drop */ else 4 /* do nothing */
-    val result = graphStream.keyBy(i=>i._3).process(new L4TimeProcessFunctions(deltaEnumMode))
-    result.addSink(new DiscardingSink[String])
+    // val deltaEnumMode = if (deltaEnumEnable) 0 /* enum and drop */ else 4 /* do nothing */
+    val deltaEnumMode = 5
+    val result = graphStream.keyBy(i=>i._3).process(new L4TimeProcessFunctions(deltaEnumMode)).writeAsText(outputpath, WriteMode.OVERWRITE)
+    //result.addSink(new DiscardingSink[String])
     // execute program
     env.execute("Line 3 Program")
   }
