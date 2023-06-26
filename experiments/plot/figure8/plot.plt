@@ -11,9 +11,9 @@ set logscale y
 set xlabel "Parallelism"
 set ylabel "Processing Time (Sec)"
 set xrange [1:6]
-set yrange [9.9:10000]
+set yrange [1:10000]
 set xtics ("1" 1, "2" 2, "4" 3, "8" 4, "16" 5, "32" 6)
-set ytics ("1e+01" 10, "1e+02" 100, "1e+03" 1000, "1e+04" 10000)
+set ytics ("1e+00" 1, "1e+01" 10, "1e+02" 100, "1e+03" 1000, "1e+04" 10000)
 set key above
 set grid lt 0 lc 0 lw 1
 set border lw 2

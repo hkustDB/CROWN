@@ -16,14 +16,16 @@ The following commands or tools need to be installed in advance.
 * pyenv virtualenv - pyenv-virtualenv 1.2.1
 * gnuplot - gnuplot 5.4
 
-### Hareware Requirements
+Please also make sure the following commands are available: `git`, `curl`, `tar`, `make`, `bc`
+
+### Hardware Requirements
 Recommended:
 - Processors: 32 threads or above
 - Memory: 500 GB or above
 - Disk: 5 TB Space, 600 MB read/write speed or above 
 
 ### Preparation
-#### Attention please!
+#### Attention, please!
 Please make sure your current working directory is the same directory as this README file, and then execute the following scripts or commands!
 
 #### 1.Prepare graph data
@@ -42,17 +44,17 @@ Please make sure your current working directory is the same directory as this RE
 ```
 2.2 To run snb_datagen, you need to install `spark-3.2.2-bin-hadoop3.2`, like this:
 ```shell
-    # 1. change into any directory which you prefer to install package
+    # 1. change into any directory in which you prefer to install the package
     # e.g., cd $HOME
     # 2. download spark-3.2.2-bin-hadoop3.2 (make sure to use this specified version)
     curl -O https://archive.apache.org/dist/spark/spark-3.2.2/spark-3.2.2-bin-hadoop3.2.tgz
     # 3. extract the package  
     tar -zxvf spark-3.2.2-bin-hadoop3.2.tgz
-    # 4. set environment variables, you should modify it to your own path. You better add it to your ~/.bash_profile.
+    # 4. set environment variables, you should modify them to your own path. You better add it to your ~/.bash_profile.
     export SPARK_HOME="/path/to/spark-3.2.2-bin-hadoop3.2"
     export PATH="${SPARK_HOME}/bin":"${PATH}"
 ```
-2.3 run the following script to git clone `ldbc_snb_datagen_spark` and build exectuable
+2.3 run the following script to git clone `ldbc_snb_datagen_spark` and build executable
 ```shell
     bash prepare_snbdatagen.sh
     # if you have questions during preparing `ldbc_snb_datagen_spark`, you can refer to https://github.com/ldbc/ldbc_snb_datagen_spark
@@ -60,14 +62,14 @@ Please make sure your current working directory is the same directory as this RE
 2.4 Run snb_datagen
 ```shell
     cd ../ldbc_snb_datagen_spark/
-    # make sure to change directory into ldbc_snb_datagen_spark which git clone in step 2.3
-    bash run.sh 3
-    # here '3' represents scale factor, it can be set to 0.003, 0.1, 0.3, 1, 3, 10...
+    # make sure to change the directory into ldbc_snb_datagen_spark which git clone in step 2.3
+    bash run.sh 1
+    # here '1' represents scale factor, it can be set to 0.003, 0.1, 0.3, 1, 3, 10...
 ```
 2.5 Set the configuration items at the head of `CROWN/experiments/snb_datagen/snb_data_convert.sh`, like this:
 ```shell
-    SF="3"
-    # SF mean scale factor, as we use 3 in step 2.4, we set SF to "3"; if we use 0.003, we should set it to "0_003", make sure to replace '.' to '_'.
+    SF="1"
+    # SF mean scale factor, as we use 1 in step 2.4, we set SF to "1"; if we use 0.003, we should set it to "0_003", make sure to replace '.' to '_'.
     BASE_PATH="/path/to/CROWN"
     # BASE_PATH is the parent path of ldbc_snb_datagen_spark directory, make sure to use the absolute path. 
     SRC_PATH="${BASE_PATH}/ldbc_snb_datagen_spark/out/graphs/csv/raw/composite-merged-fk"
@@ -77,19 +79,19 @@ Please make sure your current working directory is the same directory as this RE
     PG_USERNAME="user"
     PG_PORT="5432"
     psql_cmd="/path/to/postgresql/bin/psql"
-    # modify these PostgreSql config as your own 
+    # modify these PostgreSql configs as your own 
 
     PG_DATABASE="snb_sf${SF}"
-    # you should create a database in PostgreSql with name "snb_sf${SF}"
+    # you should create a database in PostgreSql with the name "snb_sf${SF}"
 ```
 2.6 Covert snb data
-* Attention! Make sure to create a database in `PostgreSql` with name `"snb_sf${SF}"` as mentioned in step 2.5 before you run the following commands.
+* Attention! Make sure to create a database in `PostgreSql` with the name `"snb_sf${SF}"` as mentioned in step 2.5 before you run the following commands.
 ```shell
     cd snb_datagen/
-    # make sure to change directory into CROWN/experiments/snb_datagen
+    # make sure to change the directory into CROWN/experiments/snb_datagen
     bash snb_data_convert.sh
 ```
-* If success, the converted data can be found under `${TARGET_PATH}` which you set in step 2.5
+* If successful, the converted data can be found under `${TARGET_PATH}` which you set in step 2.5
 
 #### 3.Prepare dbtoaster
 3.1 git clone `dbtoaster-backend`, `dbtoaster-a5`, `dbtoaster-experiments-data` and make some modifications
@@ -99,7 +101,7 @@ Please make sure your current working directory is the same directory as this RE
 3.2 make dbtoaster-a5
 ```shell
     cd ../dbtoaster-a5/
-    # make sure to change directory into dbtoaster-a5 which git clone in step 3.1
+    # make sure to change the directory into dbtoaster-a5 which git clone in step 3.1
     make
 ```
 3.3 If you have questions during preparing dbtoaster, you can refer to https://github.com/dbtoaster/dbtoaster-backend/blob/master/README.md
@@ -132,7 +134,7 @@ Set the following configuration items to the correct values before running. Make
     mkdir -p dbtoaster/src/main/resources
     cp path/to/hadoop-2.7.0/etc/hadoop/core-site.xml dbtoaster/src/main/resources/
     cp path/to/hadoop-2.7.0/etc/hadoop/hdfs-site.xml dbtoaster/src/main/resources/
-    # copy the core-site.xml and hdfs-site.xml to resources/ directory. You should update the core/hdfs-site.xml path in above commands to your own path.
+    # copy the core-site.xml and hdfs-site.xml to resources/ directory. You should update the core/hdfs-site.xml path in the above commands to your own path.
 ```
 
 #### 5.Run experiments
@@ -145,11 +147,11 @@ There are some `*.spec` files under the folder `experiments/specs/`. They corres
 #### Execute script
 Use the `experiments/run_all.sh` script to execute all experiments.
 ```shell
-    # This script will run all the experiment for Figure 7-10. 
+    # This script will run all the experiments for Figure 7-10. 
     bash run_all.sh
     
     # If you want to run Figure 7-10 experiments separately, you can do like this:
-    # bash build_all.sh, you should run this script first to build executable environment
+    # bash build_all.sh, you should run this script first to build an executable environment
     # then you can use run_fig7.sh to run fig7 experiments
     # or use run_fig8.sh to run fig8 experiments
     # or use run_fig9.sh to run fig8 experiments
@@ -157,7 +159,7 @@ Use the `experiments/run_all.sh` script to execute all experiments.
 ```
 
 #### Result
-Each spec file has a `spec.query.name` configuration. All the execution results are stored at the path `experiments/log/result/{spec.query.name}/{task_name}.txt`. The result of the aforementioned `task3` in `parallelism.spec` will be stored at `experiments/log/result/parallelism/task3.txt`. The script will write a '-1' in the result file for those failed or timed out executions.
+Each spec file has a `spec.query.name` configuration. All the execution results are stored at the path `experiments/log/result/{spec.query.name}/{task_name}.txt`. The result of the aforementioned `task3` in `parallelism.spec` will be stored at `experiments/log/result/parallelism/task3.txt`. The script will write a '-1' in the result file for those failed or timed-out executions.
 
 #### 6.Plotting
 You can use the `experiments/plot.sh` script to plot all the figures at once.
