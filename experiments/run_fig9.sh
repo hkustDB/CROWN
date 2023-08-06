@@ -65,6 +65,8 @@ done
 grep -q ${pattern} ${app_config} \
 && sed -i "s#${pattern}#<add key=\"${key}\" value=\"${value}\"/>#g" ${app_config} \
 || sed -i "/<appSettings>/a<add key=\"${key}\" value=\"${value}\"\/>" ${app_config}
+dotnet build "${SCRIPT_PATH}/trill/experiments-trill.csproj" "/property:GenerateFullPaths=true" "/consoleloggerparameters:NoSummary" >> ${log_file_temp} 2>&1
+
 
 # build crown
 echo "crown" >> ${log_file}
