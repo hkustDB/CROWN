@@ -53,6 +53,12 @@ function execute_task_fig8 {
         extracted_time=$(grep "Execution Time:" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $3}')
         if [[ -n ${extracted_time} ]]; then
             execution_time=${extracted_time}
+        else
+            extracted_total_time=$(grep "Total time (running + hsync):" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $7}')
+            if [[ -n ${extracted_total_time} ]]; then
+                current_execution_time=${extracted_total_time}
+                execution_time=$(echo "scale=2; x=(${current_execution_time}/1000);  if(x<1){\"0\"};  x" | bc)
+            fi 
         fi
     elif [[ "${system}" == "flink" ]]; then
         CONFIG_FILES=("${spec_file}" "${SCRIPT_PATH}/experiment.cfg")
