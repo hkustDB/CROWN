@@ -41,15 +41,10 @@ function execute_task {
         timeout_time=$(prop 'common.experiment.timeout')
         timeout -s SIGKILL "${timeout_time}" taskset -c "8" java -Xms128g -Xmx128g -jar "${SCRIPT_PATH}/dbtoaster/target/experiments-dbtoaster.jar" ${experiment} ${execution_time_log} -b$(prop 'batch.size.num') -d$(prop "task${current_task}.dataset.name") --cfg-file /spark.config.${experiment}.perf "-ep${enum_points_list}" --no-output >> ${execute_log} 2>&1    
 
-        extracted_time=$(grep "Execution Time:" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $3}')
+        extracted_time=$(grep "Total time (running + hsync):" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $7}')
         if [[ -n ${extracted_time} ]]; then
-            execution_time=${extracted_time}
-        else
-            extracted_total_time=$(grep "Total time (running + hsync):" "${SCRIPT_PATH}/dbtoaster/log/execute-${experiment}.log" | awk '{print $7}')
-            if [[ -n ${extracted_total_time} ]]; then
-                current_execution_time=${extracted_total_time}
-                execution_time=$(echo "scale=2; x=(${current_execution_time}/1000);  if(x<1){\"0\"};  x" | bc)
-            fi 
+            current_execution_time=${extracted_time}
+            execution_time=$(echo "scale=2; x=(${current_execution_time}/1000);  if(x<1){\"0\"};  x" | bc)
         fi
 
     elif [[ "${system}" == "dbtoaster_cpp" ]]; then
