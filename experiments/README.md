@@ -1,7 +1,7 @@
 # Reproducibility of the experiments
 ## Getting Started
 ### Prerequisites
-The following commands or tools need to be installed in advance.
+Before proceeding, please ensure the successful installation of the necessary commands and tools listed below.
 * GNU Time, GNU sed, GNU awk, GNU getopt
 * hdfs - hadoop 2.7.0
 * scala - version 2.12.15
@@ -16,57 +16,57 @@ The following commands or tools need to be installed in advance.
 * pyenv virtualenv - pyenv-virtualenv 1.2.1
 * gnuplot - gnuplot 5.4
 
-Please also make sure the following commands are available: `git`, `curl`, `tar`, `make`, `bc`
+Additionally, please ensure availability of the following commands: `git`, `curl`, `tar`, `make`, and `bc`
 
 ### Hardware Requirements
-Recommended:
+We recommend the following hardware specifications:
 - Processors: 32 threads or above
 - Memory: 500 GB or above
-- Disk: 5 TB Space, 600 MB read/write speed or above 
+- Disk: 5 TB space, with a read/write speed of 600 MB or above
 
 ### Preparation
 #### Attention, please!
-Please make sure your current working directory is the same directory as this README file, and then execute the following scripts or commands!
+Please ensure your current working directory matches the location of `this README file` before executing the following scripts or commands.
 
 #### 1.Prepare graph data
-1.1 run snap_graph/create_graph_data.sh
+1.1 Execute the script `create_graph_data.sh` located in the `snap_graph` directory
 ```shell
     bash snap_graph/create_graph_data.sh
 ```
-1.2 check the snap_graph directory, it will exists epinions/bitcoin/berkstan/google.txt
+1.2 Upon completion, verify the existence of the `epinions.txt`, `bitcoin.txt`, `berkstan.txt`, and `google.txt` within the `snap_graph` directory.
 
 #### 2.Prepare snb data
-2.1 To run snb_datagen, you need to create a Python virtual environment and install the dependencies.
+For execution of SNB Datagen, please follow the steps outlined below:
+2.1 Create a Python virtual environment and install the dependencies.
 ```shell
     pyenv install 3.7.13
     pyenv virtualenv 3.7.13 ldbc_datagen_tools
     pyenv local ldbc_datagen_tools
 ```
-2.2 To run snb_datagen, you need to install `spark-3.2.2-bin-hadoop3.2`, like this:
+2.2 Install `spark-3.2.2-bin-hadoop3.2`
 ```shell
-    # 1. change into any directory in which you prefer to install the package
-    # e.g., cd $HOME
-    # 2. download spark-3.2.2-bin-hadoop3.2 (make sure to use this specified version)
+    # 1. Navigate to a directory of your choice, e.g., `cd $HOME`.
+    # 2. Download Spark 3.2.2  (make sure to use this specified version)
     curl -O https://archive.apache.org/dist/spark/spark-3.2.2/spark-3.2.2-bin-hadoop3.2.tgz
-    # 3. extract the package  
+    # 3. Extract the downloaded package
     tar -zxvf spark-3.2.2-bin-hadoop3.2.tgz
-    # 4. set environment variables, you should modify them to your own path. You better add it to your ~/.bash_profile.
+    # 4. Set environment variables. Please ensure to modify them according to your file path. It's recommended to add these variables to your `~/.bash_profile`
     export SPARK_HOME="/path/to/spark-3.2.2-bin-hadoop3.2"
     export PATH="${SPARK_HOME}/bin":"${PATH}"
 ```
-2.3 run the following script to git clone `ldbc_snb_datagen_spark` and build executable
+2.3 Clone and Build `ldbc_snb_datagen_spark`
+If you encounter any issues during this process, please refer to the [official repository](https://github.com/ldbc/ldbc_snb_datagen_spark).
 ```shell
     bash prepare_snbdatagen.sh
-    # if you have questions during preparing `ldbc_snb_datagen_spark`, you can refer to https://github.com/ldbc/ldbc_snb_datagen_spark
 ```
 2.4 Run snb_datagen
+Navigate to the `ldbc_snb_datagen_spark` directory, which was cloned in the previous step, and execute the run script. Replace '1' with your desired scale factor(can be set to 0.003, 0.1, 0.3, 1, 3, 10...).
 ```shell
     cd ../ldbc_snb_datagen_spark/
-    # make sure to change the directory into ldbc_snb_datagen_spark which git clone in step 2.3
     bash run.sh 1
-    # here '1' represents scale factor, it can be set to 0.003, 0.1, 0.3, 1, 3, 10...
 ```
-2.5 Set the configuration items at the head of `CROWN/experiments/snb_datagen/snb_data_convert.sh`, like this:
+2.5 Configuring SNB Data
+Before conversion, it's essential to set configuration items at the beginning of `CROWN/experiments/snb_datagen/snb_data_convert.sh`. Modify the following parameters according to your setup:
 ```shell
     SF="1"
     # SF mean scale factor, as we use 1 in step 2.4, we set SF to "1"; if we use 0.003, we should set it to "0_003", make sure to replace '.' to '_'.
@@ -79,36 +79,37 @@ Please make sure your current working directory is the same directory as this RE
     PG_USERNAME="user"
     PG_PORT="5432"
     psql_cmd="/path/to/postgresql/bin/psql"
-    # modify these PostgreSql configs as your own 
+    # PostgreSQL database configurations
 
     PG_DATABASE="snb_sf${SF}"
-    # you should create a database in PostgreSql with the name "snb_sf${SF}"
+    # you should create a database in PostgreSql with the name "snb_sf${SF}" manually
 ```
-2.6 Covert snb data
-* Attention! Make sure to create a database in `PostgreSql` with the name `"snb_sf${SF}"` as mentioned in step 2.5 before you run the following commands.
+2.6 Convert SNB Data
+Ensure you have created a database in PostgreSQL with the name "snb_sf${SF}" before proceeding. Execute the following commands.
 ```shell
     cd snb_datagen/
-    # make sure to change the directory into CROWN/experiments/snb_datagen
     bash snb_data_convert.sh
 ```
-* If successful, the converted data can be found under `${TARGET_PATH}` which you set in step 2.5
+Upon successful execution, the converted data will be located under `${TARGET_PATH}` as specified in step 2.5.
 
-#### 3.Prepare dbtoaster
-3.1 git clone `dbtoaster-backend`, `dbtoaster-a5`, `dbtoaster-experiments-data` and make some modifications
+#### 3.Prepare DBToaster
+To effectively set up DBToaster, please follow these steps:
+3.1 Clone and Modify DBToaster Repositories
+Execute the provided script `prepare_dbtoaster.sh` to clone the necessary repositories and make the required modifications:
 ```shell
     bash prepare_dbtoaster.sh
 ```
 3.2 make dbtoaster-a5
+Navigate to the `dbtoaster-a5` directory, which was cloned in the previous step, and build DBToaster-A5 by executing the following command
 ```shell
     cd ../dbtoaster-a5/
-    # make sure to change the directory into dbtoaster-a5 which git clone in step 3.1
     make
 ```
-3.3 If you have questions during preparing dbtoaster, you can refer to https://github.com/dbtoaster/dbtoaster-backend/blob/master/README.md
+For any queries during the preparation of DBToaster, please refer to the [official documentation](https://github.com/dbtoaster/dbtoaster-backend/blob/master/README.md).
 
 #### 4.Configurations
-Set the following configuration items to the correct values before running. Make sure to use the absolute path.
-* CROWN/experiments/experiment.cfg
+Before proceeding, ensure that the following configuration items are set correctly. Please use absolute path.
+* Edit CROWN/experiments/experiment.cfg
 ```shell
     snb.data.base.path=/path/to/snb_data  
     # snb data path is the '${TARGET_PATH}' which you set in step 2.5
@@ -129,7 +130,7 @@ Set the following configuration items to the correct values before running. Make
     # this is your prefer hdfs path which you want to put data file in
     # e.g., hdfs.root.path=hdfs:///users
 ```
-* create CROWN/experiments/dbtoaster/src/main/resources/core-site.xml and CROWN/experiments/dbtoaster/src/main/resources/hdfs-site.xml
+* Copy core-site.xml and hdfs-site.xml
 ```shell
     mkdir -p dbtoaster/src/main/resources
     cp path/to/hadoop-2.7.0/etc/hadoop/core-site.xml dbtoaster/src/main/resources/
@@ -139,32 +140,41 @@ Set the following configuration items to the correct values before running. Make
 
 #### 5.Run experiments
 #### Quick result
-Typically, the experiments take several days to run. You can configure the value of `common.experiment.timeout` in the `experiment.cfg`, which is used to control the maximum timeout for each task. We strongly recommend that you use the default configuration which is 14400s,  Reducing `common.experiment.timeout` can drastically reduce the time needed to run all experiments, but it may also cause the lack of data for some time-consuming tasks in the resulting figure.
+The experiments typically require several days to complete. You have the option to configure the value of `common.experiment.timeout` in the `experiment.cfg` file, which sets the maximum timeout for each task. We recommend using the default configuration of 14400s. Reducing `common.experiment.timeout` can expedite the experiment duration, but it may lead to incomplete result for certain time-consuming tasks in the resulting figures.
 
 #### Spec files
-There are some `*.spec` files under the folder `experiments/specs/`. They correspond to the experiments in the paper. For example, the `experiments/specs/parallelism.spec` corresponds to the parallel experiment of Figure 8 in the paper, the `experiments/specs/enclosureness.spec` corresponds to the Figure 7 in the paper, and the other three spec files correspond to the Figure 10 in the paper. Each spec file is composed of several tasks, and each task corresponds to a data point or histogram bar in the figure. For example, the `task1` in the `full_join_queries.spec` measures the execution time of CROWN under the `3-Hop (length3_filter)` experiment; the `task3` in the `parallelism.spec` measures the execution time of CROWN in the experiment of `4-Hop (length4_filter)` under configuration `parallelism = 4`.
+Under the folder `experiments/specs/`, you'll find several `*.spec` files corresponding to experiments detailed in the paper. For instance:
+- `parallelism.spec` corresponds to the parallel experiment in Figure 8.
+- `enclosureness.spec` corresponds to Figure 7.
+
+Each `*.spec` file comprises several tasks, with each task representing a data point or histogram bar in the figure. For example:
+- `task1` in `full_join_queries.spec` measures CROWN's execution time under the 3-Hop (length3_filter) experiment.
+- `task3` in `parallelism.spec` measures CROWN's execution time under the experiment of 4-Hop (length4_filter) with a parallelism configuration of 4.
+
+Note: You `DO NOT` need to modify the spec files. 
 
 #### Execute script
-Use the `experiments/run_all.sh` script to execute all experiments.
+Utilize the `experiments/run_all.sh` script to execute all experiments:
 ```shell
     # This script will run all the experiments for Figure 7-10. 
     bash run_all.sh
     
-    # If you want to run Figure 7-10 experiments separately, you can do like this:
-    # bash build_all.sh, you should run this script first to build an executable environment
-    # then you can use run_fig7.sh to run fig7 experiments
-    # or use run_fig8.sh to run fig8 experiments
-    # or use run_fig9.sh to run fig8 experiments
-    # or use execute_all.sh to run fig10 experiments
+    # Alternatively, you can run experiments for Figures 7-10 separately:
+    # bash build_all.sh - Run this script first to build an executable environment.
+    # Then, you can use:
+    # - run_fig7.sh to run experiments for Figure 7
+    # - run_fig8.sh to run experiments for Figure 8
+    # - run_fig9.sh to run experiments for Figure 9
+    # - execute_all.sh to run experiments for Figure 10
 ```
 
 #### Result
-Each spec file has a `spec.query.name` configuration. All the execution results are stored at the path `experiments/log/result/{spec.query.name}/{task_name}.txt`. The result of the aforementioned `task3` in `parallelism.spec` will be stored at `experiments/log/result/parallelism/task3.txt`. The script will write a '-1' in the result file for those failed or timed-out executions.
+Each `*.spec` file contains a `spec.query.name` configuration. All execution results are stored at `experiments/log/result/{spec.query.name}/{task_name}.txt`. For example, the result of `task3` in `parallelism.spec` will be stored at `experiments/log/result/parallelism/task3.txt`. In cases of failed or timed-out executions, the script will write '-1' in the result file.
 
 #### 6.Plotting
-You can use the `experiments/plot.sh` script to plot all the figures at once.
+You can utilize the `experiments/plot.sh` script to generate all figures at once.
 ```shell
-    # This script will plot the experiment results(Figure 7-10).
+    # This script will plot the experiment results (Figure 7-10).
     # For Fig 7, the output path is experiments/log/figure/figure7.png
     # For Fig 8, the output path is experiments/log/figure/figure8.png
     # For Fig 9, the output path is experiments/log/figure/figure9.png
@@ -213,4 +223,4 @@ You can use the `experiments/plot.sh` script to plot all the figures at once.
 ```
 
 ### Troubleshooting
-If you have any trouble in running experiments, please check the logs in `log/` or `system/log/`.
+If you encounter any difficulties while running experiments, please refer to the logs in `log/` or `system/log/`.
