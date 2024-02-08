@@ -1,6 +1,6 @@
 # CROWN
 
-This is an implementation of our paper Change Propagation Without Joins..
+This is an implementation of our paper Change Propagation Without Joins.
 
 ## Prerequisites
 
