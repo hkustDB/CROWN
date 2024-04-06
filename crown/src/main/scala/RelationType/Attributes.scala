@@ -28,7 +28,10 @@ case class Attributes(values : Array[Any], keys : Array[String], basedannotation
       case joinedAttributes: JoinedAttributes =>
         joinedAttributes.join(this)
       case _ =>
-        if (joinedList == null) joinedList = new JoinedAttributes(this)
+        if (joinedList == null) {
+          joinedList = new JoinedAttributes(this)
+        }
+        joinedList.annotation = this.annotation
         joinedList.join(that)
     }
   }
@@ -75,7 +78,10 @@ case class Attributes(values : Array[Any], keys : Array[String], basedannotation
 
   override def toString: String = {
     if (equalDouble(annotation, 1.0)) s"${values.mkString(" , ")}, ${keys.mkString(" , ")}"
-    else s"${values.mkString(" , ")}, ${keys.mkString(" , ")}, Annotation : $annotation"
+    else {
+      val anno = f"$annotation%1.3f"
+      s"${values.mkString(" , ")}, ${keys.mkString(" , ")}, Annotation : $anno"
+    }
   }
 
   def equalDouble(v1 : Double, v2 : Double) : Boolean = {

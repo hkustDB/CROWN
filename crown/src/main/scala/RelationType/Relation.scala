@@ -1,11 +1,11 @@
 package RelationType
 
-import java.io.FileWriter
 import org.apache.flink.api.common.functions.RuntimeContext
 import org.apache.flink.api.common.state.{MapState, MapStateDescriptor, ValueState}
 import org.apache.flink.api.common.typeinfo.{BasicTypeInfo, TypeInformation}
 import org.apache.flink.util.Collector
 
+import java.io.FileWriter
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -341,7 +341,7 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
   def getAnnotation(keys : Attributes) : Double = {
     var annotation = keys.basedannotation
     for (i <- connection) {
-      if (!i._1.isOutput) {annotation = annotation * i._1.getKeyCount(keys.projection(i._2))}
+      if (!i._1.isOutput) {annotation = annotation * i._1.getWpByKey(keys.projection(i._2))}
     }
     annotation
   }
@@ -368,14 +368,17 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
         val jk = i.projection(joinkey)
         val tempEle = alive.get(jk)
         if (tempEle.contains(i)) {
-          i.annotation = getAnnotation(i)
+          val newAnnotation = getAnnotation(i)
+          val deltaAnnotation = newAnnotation - i.annotation
+          i.annotation = newAnnotation
+          updateWpByKey(jk, deltaAnnotation)
           if (this.isOutput && (nextRelation == null || nextRelation.ifGloballyAlive(jk, this))) {
             val t = new fullAttrEnumerator(i, "Update")
             outputResult(t, "U-")
           } else {
-            if (!this.isOutput)
-              throw new NoSuchMethodException(
-                "Multiple level non-output attributes with annotated relation are not supported!")
+            if (!this.isOutput) {
+              nextRelation.updateAnnotation(jk, this)
+            }
           }
         }
       }
@@ -768,9 +771,6 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
 
   def joinKeyEnumerate(keys : Attributes, operation : String = "Delta") : Iterator[Attributes] = new joinKeyEnumerator(keys, operation)
 
-  //TODO When root is the only output relation, the annotation of root node are incorrect.
-  // Temp fix: add another relation on the top of root node.
-
   class joinKeyEnumerator(keys : Attributes, operation : String = "Delta") extends Iterator[Attributes] {
     var iter1 : Iterator[Attributes] = null
     var iter2 : Iterator[Attributes] = null
@@ -812,6 +812,15 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
       }
     }
 
+    // fix the issue when root is the only output relation
+    private def getIter1Next(): Attributes = {
+      if (nextRelation != null) {
+        iter1.next()
+      } else {
+        alive.get(iter1.next()).head
+      }
+    }
+
     def open() : Unit = {
       init = true
       cnt = 0
@@ -823,7 +832,7 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
       iter1 = tempval
       cnt = cnt + 1
       if (iter1.hasNext) {
-        current1 = iter1.next()
+        current1 = getIter1Next()
         changeGlobalAlive(current1, operation)
         if (1 <= connection.length && connection(0)._1.isOutput) {
           initIter2()
@@ -865,7 +874,7 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
             initIter3()
           } else {
             if (iter1.hasNext) {
-              current1 = iter1.next()
+              current1 = getIter1Next()
               changeGlobalAlive(current1, operation)
               initIter2()
               current1JoinCurrent2 = current1.join(current2)
@@ -882,7 +891,7 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
         if (cnt == 1) {
           val nextResult = current1
           if (iter1.hasNext) {
-            current1 = iter1.next()
+            current1 = getIter1Next()
             changeGlobalAlive(current1, operation)
           }
           else current1 = null
@@ -895,7 +904,7 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
             current2 = iter2.next()
           } else {
             if (iter1.hasNext) {
-              current1 = iter1.next()
+              current1 = getIter1Next()
               changeGlobalAlive(current1, operation)
               initIter2()
             } else {
@@ -909,5 +918,9 @@ abstract class Relation(name : String, joinkey : Array[String], nextRelation : R
     }
   }
 
+  def getWpByKey(key: Attributes): Double = 1.0
 
+  def updateWpByKey(key: Attributes, delta: Double): Unit = {
+    // do noting by default
+  }
 }

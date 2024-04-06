@@ -112,6 +112,9 @@ class JoinedAttributes(basedannotation : Double) extends Attributes(null, null, 
 
   override def toString: String = {
     if (equalDouble(annotation, 1.0)) valueList.mkString(" , ")
-    else valueList.mkString(" , ") + s" Annotation : $annotation"
+    else {
+      val anno = f"$annotation%1.3f"
+      valueList.mkString(" , ") + s" Annotation : $anno"
+    }
   }
 }

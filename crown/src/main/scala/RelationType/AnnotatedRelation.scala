@@ -1,14 +1,9 @@
 package RelationType
-
 import org.apache.flink.api.common.functions.RuntimeContext
 import org.apache.flink.api.common.state.{MapState, MapStateDescriptor}
 import org.apache.flink.api.common.typeinfo.{BasicTypeInfo, TypeInformation}
-import org.apache.flink.util.Collector
 
-import java.io.FileWriter
-import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
  *
@@ -16,6 +11,7 @@ import scala.collection.mutable.ArrayBuffer
  */
 abstract class AnnotatedRelation(name : String, joinkey : Array[String], nextRelation : Relation, override val deltaEnumMode: Int, numChild : Int = 0)
  extends Relation(name, joinkey, nextRelation, deltaEnumMode, numChild, false) {
+  var wp: MapState[Attributes, Double] = _
 
   /***
    * Index: alive/onhold using join key as key.  onhold also contains s(t) for each t;
@@ -48,7 +44,14 @@ abstract class AnnotatedRelation(name : String, joinkey : Array[String], nextRel
    */
 
   override protected def aliveAdd(tuple : Attributes) : Unit = {
+    tuple.annotation = getAnnotation(tuple)
     val projectB = tuple.projection(joinkey)
+    if (wp.contains(projectB)) {
+      wp.put(projectB, wp.get(projectB) + tuple.annotation)
+    } else {
+      wp.put(projectB, tuple.annotation)
+    }
+
     if (alive.contains(projectB)) {
       if (!keyCount.contains(projectB))
         throw new Exception("ERROR! Element not found!")
@@ -66,16 +69,19 @@ abstract class AnnotatedRelation(name : String, joinkey : Array[String], nextRel
 
   override protected def aliveDelete(tuple : Attributes) : Unit = {
     val projectB = tuple.projection(joinkey)
+    tuple.annotation = getAnnotation(tuple)
+    wp.put(projectB, wp.get(projectB) - tuple.annotation)
+    nextRelation.updateAnnotation(projectB, this)
+
     if (!keyCount.contains(projectB))
       throw new Exception("ERROR! Element not found!")
     else {
       val tempCount = keyCount.get(projectB)
       if (tempCount == 1) {
         keyCount.remove(projectB)
-
+        wp.remove(projectB)
       } else {
         keyCount.put(projectB, tempCount-1)
-        nextRelation.updateAnnotation(projectB, this)
       }
       triggerUpdate(tuple, "Delete")
       deleteElementFromIndex(projectB, tuple, alive)
@@ -87,4 +93,18 @@ abstract class AnnotatedRelation(name : String, joinkey : Array[String], nextRel
     "AnnotatedRelation " + name
   }
 
+  override def initState(runtimeContext: RuntimeContext, attributesDescriptor: TypeInformation[Attributes], setAttributesDescriptor: TypeInformation[mutable.HashSet[Attributes]], mapAttributesDescriptor: TypeInformation[mutable.HashMap[Attributes, Int]]): Unit = {
+    super.initState(runtimeContext, attributesDescriptor, setAttributesDescriptor, mapAttributesDescriptor)
+
+    val wpDescriptor = new MapStateDescriptor[Attributes, Double](name + "wp", attributesDescriptor, BasicTypeInfo.DOUBLE_TYPE_INFO.asInstanceOf[TypeInformation[Double]])
+    wp = runtimeContext.getMapState(wpDescriptor)
+  }
+
+  override def getWpByKey(key: Attributes): Double = {
+    wp.get(key)
+  }
+
+  override def updateWpByKey(key: Attributes, delta: Double): Unit = {
+    wp.put(key, wp.get(key) + delta)
+  }
 }
